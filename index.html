@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIXELBYTE — Tech & Gaming Blog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #0f0f18;
+      --bg3: #141420;
+      --surface: #1a1a28;
+      --surface2: #22223a;
+      --accent: #00e5a0;
+      --accent2: #7c3aed;
+      --accent3: #f59e0b;
+      --text: #eeeef5;
+      --muted: #8888aa;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --glow: 0 0 20px rgba(0,229,160,0.15);
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Rajdhani', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem;
+      height: 64px;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--text);
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-bracket {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .logo-cursor {
+      width: 3px; height: 18px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .nav-center {
+      display: flex; gap: 2rem;
+    }
+
+    .nav-center a {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .nav-center a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 1px; background: var(--accent);
+      transform: scaleX(0); transition: transform 0.2s;
+    }
+
+    .nav-center a:hover { color: var(--accent); }
+    .nav-center a:hover::after { transform: scaleX(1); }
+
+    .nav-right {
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .nav-live {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--accent); letter-spacing: 1px;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+    .nav-btn {
+      font-family: var(--font-mono); font-size: 11px;
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 7px 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      padding: 5rem 2.5rem 4rem;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 70% 50%, rgba(124,58,237,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 20% 80%, rgba(0,229,160,0.08) 0%, transparent 60%);
+    }
+
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: linear-gradient(to bottom, transparent, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.3) 70%, transparent);
+    }
+
+    .hero-content {
+      position: relative; z-index: 1;
+      max-width: 900px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--accent); letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(0,229,160,0.3);
+      padding: 5px 12px; border-radius: 2px;
+      background: rgba(0,229,160,0.05);
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 7vw, 72px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -1px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 .line2 {
+      color: var(--accent);
+      -webkit-text-stroke: 0px;
+    }
+
+    .hero h1 .outline {
+      -webkit-text-stroke: 1px rgba(238,238,245,0.3);
+      color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 18px; font-weight: 400;
+      color: var(--muted); line-height: 1.6;
+      max-width: 500px; margin-bottom: 2.5rem;
+    }
+
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .btn-accent {
+      font-family: var(--font-mono); font-size: 13px; letter-spacing: 1px;
+      background: var(--accent); color: var(--bg);
+      border: none; padding: 14px 28px; border-radius: 2px;
+      cursor: pointer; font-weight: 700; text-transform: uppercase;
+      transition: all 0.2s;
+      box-shadow: 0 0 30px rgba(0,229,160,0.25);
+    }
+
+    .btn-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 40px rgba(0,229,160,0.4);
+    }
+
+    .btn-outline {
+      font-family: var(--font-mono); font-size: 13px; letter-spacing: 1px;
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border2); padding: 14px 28px; border-radius: 2px;
+      cursor: pointer; text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-outline:hover { border-color: var(--muted); }
+
+    .hero-stats {
+      position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 1.5rem;
+    }
+
+    .stat-item { text-align: right; }
+    .stat-num {
+      font-family: var(--font-display); font-size: 28px; font-weight: 900;
+      color: var(--text); line-height: 1;
+    }
+    .stat-num span { color: var(--accent); }
+    .stat-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+
+    /* TICKER */
+    .ticker {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      padding: 10px 0;
+    }
+
+    .ticker-inner {
+      display: flex; gap: 3rem;
+      animation: scroll 25s linear infinite;
+      width: max-content;
+    }
+
+    @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    .ticker-item {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--muted); white-space: nowrap; letter-spacing: 0.5px;
+    }
+
+    .ticker-item .tag-mini {
+      font-size: 10px; padding: 2px 6px;
+      border-radius: 2px; font-weight: 700;
+    }
+
+    .tag-r { background: rgba(0,229,160,0.15); color: var(--accent); }
+    .tag-n { background: rgba(124,58,237,0.2); color: #a78bfa; }
+    .tag-g { background: rgba(245,158,11,0.15); color: var(--accent3); }
+
+    /* SECTIONS */
+    .section { padding: 3.5rem 2.5rem; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--font-display); font-size: 13px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase; color: var(--text);
+    }
+
+    .section-title::before {
+      content: '';
+      width: 3px; height: 18px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    .see-all {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--accent); letter-spacing: 1px;
+      text-decoration: none; text-transform: uppercase;
+      transition: opacity 0.2s;
+    }
+    .see-all:hover { opacity: 0.7; }
+
+    /* FEATURED */
+    .featured-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .featured-main {
+      grid-row: 1 / 3;
+      background: var(--bg2);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      min-height: 400px;
+    }
+
+    .featured-main:hover .card-overlay { opacity: 1; }
+
+    .card-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,229,160,0.03);
+      opacity: 0;
+      transition: opacity 0.3s;
+      border: 1px solid rgba(0,229,160,0.2);
+    }
+
+    .featured-thumb {
+      width: 100%; height: 240px;
+      background: linear-gradient(135deg, #0f1020 0%, #1a0a30 50%, #0a1530 100%);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+
+    .thumb-pattern {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(45deg, rgba(124,58,237,0.1) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(0,229,160,0.05) 25%, transparent 25%);
+      background-size: 40px 40px;
+    }
+
+    .thumb-icon {
+      font-size: 64px; position: relative; z-index: 1;
+      filter: drop-shadow(0 0 20px rgba(124,58,237,0.5));
+    }
+
+    .thumb-badge {
+      position: absolute; top: 12px; left: 12px;
+      font-family: var(--font-mono); font-size: 10px;
+      background: var(--accent); color: var(--bg);
+      padding: 4px 10px; border-radius: 2px;
+      font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    .thumb-score {
+      position: absolute; bottom: 12px; right: 12px;
+      font-family: var(--font-display); font-size: 36px; font-weight: 900;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0,229,160,0.5);
+    }
+
+    .thumb-score sub { font-size: 16px; color: var(--muted); }
+
+    .featured-body { padding: 1.5rem; }
+
+    .card-tags { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+
+    .ctag {
+      font-family: var(--font-mono); font-size: 10px;
+      padding: 3px 8px; border-radius: 2px;
+      letter-spacing: 0.5px; text-transform: uppercase; font-weight: 700;
+      border: 1px solid;
+    }
+
+    .ctag-review { color: var(--accent); border-color: rgba(0,229,160,0.3); background: rgba(0,229,160,0.08); }
+    .ctag-rpg { color: #a78bfa; border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.08); }
+    .ctag-pc { color: var(--accent3); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+    .ctag-news { color: #60a5fa; border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.08); }
+    .ctag-hardware { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.08); }
+    .ctag-guide { color: #34d399; border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.08); }
+    .ctag-fps { color: #fb923c; border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.08); }
+
+    .featured-body h2 {
+      font-family: var(--font-display);
+      font-size: 22px; font-weight: 700;
+      line-height: 1.25; letter-spacing: -0.3px;
+      margin-bottom: 10px; color: var(--text);
+    }
+
+    .featured-body p {
+      font-size: 15px; color: var(--muted); line-height: 1.65; margin-bottom: 1rem;
+    }
+
+    .card-meta-row {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    }
+
+    .meta-dot { width: 2px; height: 2px; background: var(--muted); border-radius: 50%; }
+
+    .author-chip {
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .author-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      background: var(--accent2); color: #fff;
+    }
+
+    /* SIDE CARDS */
+    .featured-side {
+      background: var(--bg2);
+      padding: 1.25rem;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: background 0.2s;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      min-height: 195px;
+    }
+
+    .featured-side:hover { background: var(--bg3); }
+
+    .side-thumb-bg {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; opacity: 0.12;
+    }
+
+    .side-body { position: relative; z-index: 1; }
+
+    .side-body h3 {
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 700;
+      line-height: 1.35; margin-bottom: 8px;
+      letter-spacing: -0.2px;
+    }
+
+    /* POST CARDS GRID */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .post-card {
+      background: var(--bg2);
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .post-card:hover { background: var(--bg3); }
+    .post-card:hover .post-arrow { transform: translateX(4px); opacity: 1; }
+
+    .post-thumb-bar {
+      height: 140px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px;
+      position: relative; overflow: hidden;
+    }
+
+    .post-thumb-bar::before {
+      content: '';
+      position: absolute; inset: 0;
+    }
+
+    .pt-fps { background: linear-gradient(135deg, #1a0505, #2d0f0f); }
+    .pt-fps::before { background: radial-gradient(circle at 50% 120%, rgba(248,113,113,0.2), transparent 70%); }
+
+    .pt-hw { background: linear-gradient(135deg, #0a0f1a, #0f1a2d); }
+    .pt-hw::before { background: radial-gradient(circle at 50% 120%, rgba(96,165,250,0.2), transparent 70%); }
+
+    .pt-str { background: linear-gradient(135deg, #0a1a0a, #0f2d10); }
+    .pt-str::before { background: radial-gradient(circle at 50% 120%, rgba(52,211,153,0.2), transparent 70%); }
+
+    .pt-rpg { background: linear-gradient(135deg, #130a1a, #1e0f2d); }
+    .pt-rpg::before { background: radial-gradient(circle at 50% 120%, rgba(167,139,250,0.2), transparent 70%); }
+
+    .post-card-body { padding: 1.25rem; }
+
+    .post-card-body h3 {
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 700;
+      line-height: 1.35; letter-spacing: -0.2px;
+      margin: 8px 0 8px; color: var(--text);
+    }
+
+    .post-card-body p {
+      font-size: 13px; color: var(--muted); line-height: 1.55; margin-bottom: 12px;
+    }
+
+    .post-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    }
+
+    .post-arrow {
+      color: var(--accent);
+      opacity: 0.5;
+      transition: transform 0.2s, opacity 0.2s;
+      font-size: 14px;
+    }
+
+    .rating-bar {
+      display: flex; gap: 2px; align-items: center;
+    }
+
+    .rating-pip {
+      width: 16px; height: 4px; border-radius: 1px;
+      background: var(--surface2);
+    }
+
+    .rating-pip.filled { background: var(--accent); }
+
+    /* TRENDING SECTION */
+    .trending-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .trending-list { display: flex; flex-direction: column; }
+
+    .trending-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .trending-item:first-child { border-top: 1px solid var(--border); }
+    .trending-item:hover { opacity: 0.7; }
+
+    .trend-num {
+      font-family: var(--font-display); font-size: 28px; font-weight: 900;
+      color: var(--border2); min-width: 42px; line-height: 1;
+      padding-top: 2px;
+    }
+
+    .trend-num.hot { color: var(--accent); }
+
+    .trend-body { flex: 1; }
+
+    .trend-title {
+      font-family: var(--font-display);
+      font-size: 15px; font-weight: 700;
+      line-height: 1.3; margin-bottom: 5px; color: var(--text);
+    }
+
+    .trend-meta {
+      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+      display: flex; gap: 10px; align-items: center;
+    }
+
+    .trend-views {
+      color: var(--accent); display: flex; align-items: center; gap: 4px;
+    }
+
+    /* NEWSLETTER */
+    .newsletter-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.75rem;
+      position: relative; overflow: hidden;
+    }
+
+    .newsletter-box::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(0,229,160,0.08), transparent 70%);
+    }
+
+    .newsletter-box-content { position: relative; z-index: 1; }
+
+    .nl-icon {
+      font-size: 32px; margin-bottom: 1rem;
+      display: block;
+    }
+
+    .newsletter-box h3 {
+      font-family: var(--font-display); font-size: 16px; font-weight: 700;
+      letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+
+    .newsletter-box p {
+      font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 1.25rem;
+    }
+
+    .nl-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: var(--font-mono); font-size: 12px;
+      padding: 10px 14px; border-radius: 2px;
+      margin-bottom: 8px;
+      outline: none; transition: border-color 0.2s;
+    }
+
+    .nl-input:focus { border-color: var(--accent); }
+    .nl-input::placeholder { color: var(--muted); }
+
+    .nl-btn {
+      width: 100%;
+      background: var(--accent); color: var(--bg);
+      border: none; padding: 11px;
+      border-radius: 2px;
+      font-family: var(--font-display); font-size: 12px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+
+    .nl-btn:hover { opacity: 0.85; }
+
+    .nl-note {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--muted); text-align: center; margin-top: 8px;
+    }
+
+    /* CATEGORIES */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .cat-card {
+      background: var(--bg2);
+      padding: 1.5rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    .cat-card:hover { background: var(--bg3); }
+
+    .cat-icon { font-size: 32px; display: block; margin-bottom: 10px; }
+
+    .cat-name {
+      font-family: var(--font-display); font-size: 12px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .cat-count {
+      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .footer-brand h4 {
+      font-family: var(--font-display); font-size: 16px; font-weight: 900;
+      letter-spacing: 3px; margin-bottom: 10px;
+    }
+
+    .footer-brand p {
+      font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 220px;
+    }
+
+    .footer-col h5 {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--muted); margin-bottom: 1rem;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 14px; color: var(--muted);
+      text-decoration: none; margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--accent); }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 2.5rem;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    }
+
+    .footer-bottom span { color: var(--accent); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Global Custom Cursor */
+    * { cursor: none !important; }
+    a, button { cursor: none !important; }
+    
+    #globalCursor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 999999;
+      width: 28px;
+      height: 36px;
+      transform: translate(-50%, -50%);
+      display: block;
+      top: -100px;
+      left: -100px;
+    }
+
+    .hero-content { animation: fadeUp 0.6s ease-out both; }
+    .hero-stats { animation: fadeUp 0.6s 0.2s ease-out both; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 0 1.25rem; }
+      .nav-center { display: none; }
+      .nav-right { gap: 8px; }
+      .mobile-menu-btn { display: flex !important; }
+      .hero { padding: 3rem 1.25rem 2.5rem; }
+      .hero-stats { display: none; }
+      .section { padding: 2.5rem 1.25rem; }
+      .featured-grid { grid-template-columns: 1fr; }
+      .featured-main { grid-row: auto; }
+      .trending-layout { grid-template-columns: 1fr; }
+      footer { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+      .nav-search { display: flex !important; }
+      .nav-search .search-input { width: 120px; padding: 5px 8px; }
+      .nav-search .search-container { display: flex; }
+    }
+    
+    /* Mobile Menu */
+    .mobile-menu-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+    }
+    .mobile-menu-btn span {
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+      transition: 0.3s;
+    }
+    .mobile-menu-btn.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
+    .mobile-menu-btn.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+    .mobile-nav { display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 1rem; flex-direction: column; gap: 1rem; z-index: 99; }
+    .mobile-nav.active { display: flex; }
+    .mobile-nav a { color: var(--text); text-decoration: none; font-family: var(--font-mono); font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    
+    /* Search - Nav bar style */
+    .search-container { position: relative; display: none; }
+    .nav-right .search-container { display: none; }
+    .search-input { display: none; background: var(--surface); border: 1px solid var(--border2); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 8px 12px; border-radius: 2px; width: 200px; }
+    .search-input.active { display: block; }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+    .nav-search.search-container { display: flex; }
+    .nav-search .search-input { display: block; }
+    
+    /* Theme Toggle */
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 5px;
+      transition: transform 0.3s;
+    }
+    .theme-toggle:hover { transform: scale(1.1); }
+    
+    /* Back to Top */
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 24px;
+      display: none;
+      z-index: 1000;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px rgba(0,229,160,0.3);
+    }
+    .back-to-top:hover { transform: translateY(-5px); box-shadow: 0 0 30px rgba(0,229,160,0.5); }
+    .back-to-top.visible { display: flex; align-items: center; justify-content: center; }
+    
+    /* Scroll Animation */
+    .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.6s ease-out; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    
+    /* Light Mode */
+    body.light-mode {
+      --bg: #f5f5f7;
+      --bg2: #ffffff;
+      --bg3: #e8e8ed;
+      --surface: #f0f0f5;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --border: rgba(0,0,0,0.08);
+      --border2: rgba(0,0,0,0.15);
+    }
+    
+    /* Newsletter Error */
+    .nl-error { color: #ef4444; font-size: 12px; margin-top: 5px; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Global Custom Cursor -->
+<div id="globalCursor">
+  <svg viewBox="0 0 28 36" fill="none">
+    <path d="M14 2 C8 2 4 6 4 12 L4 22 C4 26 6 30 10 32 L14 36 L18 32 C22 30 24 26 24 22 L24 12 C24 6 20 2 14 2 Z" fill="#1a1a28" stroke="#00e5a0" stroke-width="1.5"/>
+    <path d="M14 2 C8 2 4 6 4 12 L4 22 C4 26 6 30 10 32 L14 36 L18 32 C22 30 24 26 24 22 L24 12 C24 6 20 2 14 2 Z" fill="url(#mouseGrad)" opacity="0.3"/>
+    <circle cx="14" cy="12" r="3" fill="#00e5a0" filter="url(#glow)"/>
+    <path d="M14 16 L14 20" stroke="#00e5a0" stroke-width="2" stroke-linecap="round"/>
+    <path d="M10 22 L8 28" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M18 22 L20 28" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="mouseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00e5a0"/>
+        <stop offset="100%" stop-color="#7c3aed"/>
+      </linearGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <span class="logo-bracket">[</span>PIXELBYTE<span class="logo-bracket">]</span>
+    <div class="logo-cursor"></div>
+  </a>
+  <div class="nav-center">
+    <a href="#" id="navReviews">Reviews</a>
+    <a href="#" id="navGuides">Guides</a>
+    <a href="#" id="navHardware">Hardware</a>
+    <a href="#" id="navNews">News</a>
+    <a href="#" id="navEsports">Esports</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" title="Theme wechseln">🌙</button>
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+      <span></span><span></span><span></span>
+    </button>
+    <button class="nav-btn" onclick="const t=document.getElementById('newsletterSection');window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-150,behavior:'smooth'})">Newsletter</button>
+    <button class="nav-btn" onclick="document.getElementById('gameSelectModal').style.display='flex'">👾 Spiele</button>
+  </div>
+</nav>
+
+<!-- Mobile Navigation -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="#" id="navReviewsMobile">Reviews</a>
+  <a href="#" id="navGuidesMobile">Guides</a>
+  <a href="#" id="navHardwareMobile">Hardware</a>
+  <a href="#" id="navNewsMobile">News</a>
+  <a href="#" id="navEsportsMobile">Esports</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="live-dot"></div>
+      Dein Gaming &amp; Tech Blog
+    </div>
+    <h1>
+      Spiel.<br>
+      <span class="line2">Reviews.</span><br>
+      <span class="outline">Kein Bullshit.</span>
+    </h1>
+    <p class="hero-sub">Ehrliche Reviews, tiefe Guides und heiße News aus der Welt der Spiele und Technologie.</p>
+    <div class="hero-actions">
+      <button class="btn-accent" onclick="const t=document.getElementById('eldenSection');window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-150,behavior:'smooth'})">Jetzt lesen →</button>
+      <button class="btn-outline" id="aboutBtn">Über PIXELBYTE</button>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">120<span>+</span></div>
+      <div class="stat-label">Reviews</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">48<span>k</span></div>
+      <div class="stat-label">Leser / Monat</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">9<span>.2</span></div>
+      <div class="stat-label">Ø Score</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="ticker-item"><span class="tag-mini tag-r">REVIEW</span> Elden Ring Nightreign — 9.5/10 ★★★★★</div>
+    <div class="ticker-item"><span class="tag-mini tag-n">NEWS</span> GTA VI offizieller Release-Termin bestätigt</div>
+    <div class="ticker-item"><span class="tag-mini tag-g">GUIDE</span> Die besten Gaming-Setups unter 500€</div>
+    <div class="ticker-item"><span class="tag-mini tag-r">REVIEW</span> RTX 5090 im Test — Monster oder Mogelpackung?</div>
+    <div class="ticker-item"><span class="tag-mini tag-n">NEWS</span> Steam Next Fest: Alle Demos im Überblick</div>
+    <div class="ticker-item"><span class="tag-mini tag-g">GUIDE</span> So baust du deinen ersten PC für 800€</div>
+    <div class="ticker-item"><span class="tag-mini tag-r">REVIEW</span> Elden Ring Nightreign — 9.5/10 ★★★★★</div>
+    <div class="ticker-item"><span class="tag-mini tag-n">NEWS</span> GTA VI offizieller Release-Termin bestätigt</div>
+    <div class="ticker-item"><span class="tag-mini tag-g">GUIDE</span> Die besten Gaming-Setups unter 500€</div>
+    <div class="ticker-item"><span class="tag-mini tag-r">REVIEW</span> RTX 5090 im Test — Monster oder Mogelpackung?</div>
+    <div class="ticker-item"><span class="tag-mini tag-n">NEWS</span> Steam Next Fest: Alle Demos im Überblick</div>
+    <div class="ticker-item"><span class="tag-mini tag-g">GUIDE</span> So baust du deinen ersten PC für 800€</div>
+  </div>
+</div>
+
+<!-- FEATURED -->
+<section class="section" id="eldenSection">
+  <div class="section-header">
+    <div class="section-title">Featured</div>
+    <a href="#" class="see-all" id="allReviewsBtn">Alle Reviews →</a>
+  </div>
+  <div class="featured-grid">
+
+    <!-- Main Feature -->
+    <div class="featured-main">
+      <div class="card-overlay"></div>
+      <div class="featured-thumb">
+        <div class="thumb-pattern"></div>
+        <div class="thumb-icon">⚔️</div>
+        <div class="thumb-badge">★ Top Pick</div>
+        <div class="thumb-score">9.5<sub>/10</sub></div>
+      </div>
+      <div class="featured-body">
+        <div class="card-tags">
+          <span class="ctag ctag-review">Review</span>
+          <span class="ctag ctag-rpg">Action-RPG</span>
+          <span class="ctag ctag-pc">PC / PS5</span>
+        </div>
+        <h2>Elden Ring Nightreign — Das beste Soulslike seit Jahren?</h2>
+        <p>Elden Ring ist ein episches Open-World-Action-Rollenspiel, das von FromSoftware entwickelt und 2022 veröffentlicht wurde. Das Spiel spielt in den sogenannten Zwischenlanden, einer riesigen, atmosphärischen Welt voller Geheimnisse, Ruinen und gefährlicher Kreaturen. Spieler schlüpfen in die Rolle eines „Tarnished“, der ohne Erinnerung in diese zerrissene Welt kommt und die Aufgabe hat, den Elden Ring wiederherzustellen und Elden Lord zu werden. Anders als frühere Spiele von FromSoftware bietet Elden Ring eine offene Welt, in der man fast überall hinreisen, versteckte Dungeons entdecken und mächtige Bosse herausfordern kann. Das Kampfsystem bleibt taktisch anspruchsvoll: Timing, Ausweichen, strategischer Einsatz von Waffen, Magie und Beschwörungen sind entscheidend für den Erfolg. Die Geschichte wird fragmentarisch erzählt – über NPCs, Gegenstände und die Welt selbst – und zeichnet sich durch ihre düstere, geheimnisvolle Atmosphäre aus, die von George R. R. Martin mitgestaltet wurde. Neben der Einzelspieler-Erfahrung können Spieler auch im Koop-Modus gemeinsam Bosse bezwingen oder im PvP gegeneinander antreten. Elden Ring kombiniert somit fordernde Kämpfe, freie Erkundung und tiefgehende Lore zu einem Spiel, das für seine epische Größe und seinen hohen Schwierigkeitsgrad gefeiert wird.</p>
+        <div class="card-meta-row">
+          <div class="author-chip">
+            <div class="author-avatar">M</div>
+            <span>Max Berger</span>
+          </div>
+          <div class="meta-dot"></div>
+          <span>24. März 2026</span>
+          <div class="meta-dot"></div>
+          <span>10 Min lesen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side 1 -->
+    <div class="featured-side">
+      <div class="side-thumb-bg">🎯</div>
+      <div class="side-body">
+        <div class="card-tags" style="margin-bottom:8px;">
+          <span class="ctag ctag-fps">FPS</span>
+          <span class="ctag ctag-review">Review</span>
+        </div>
+        <h3>Valorant Act V — Frischer Wind oder mehr vom Selben?</h3>
+        <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:8px;">Der Taktik-Shooter von Riot Games bringt neue Agenten und Maps.</p>
+        <p class="full-text" style="display:none;">Valorant ist der kostenlose First-Person-Taktik-Shooter von Riot Games, der 2020 veröffentlicht wurde und seitdem die eSports-Landschaft revolutioniert hat. Das Spiel kombiniert präzise Shooter-Mechaniken à la Counter-Strike mit einzigartigen Fähigkeiten verschiedener Agenten – eine Mischung, die sowohl Casual-Spieler als auch kompetitive Profis begeistert. In Valorant übernehmen Spieler die Kontrolle über einen von zahlreichen Agenten, jeder mit seinem eigenen einzigartigen Fähigkeitenrepertoire.</p>
+        <div class="card-meta-row" style="margin-top:8px;">
+          <span>21. Mrz 2026</span>
+          <div class="meta-dot"></div>
+          <span>8.0/10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side 2 -->
+    <div class="featured-side" style="border-top: 1px solid var(--border);">
+      <div class="side-thumb-bg">🖥️</div>
+      <div class="side-body">
+        <div class="card-tags" style="margin-bottom:8px;">
+          <span class="ctag ctag-hardware">Hardware</span>
+        </div>
+        <h3>RTX 5090 Test: Nvidia übertreibt — und wie.</h3>
+        <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:8px;">Nvidias neuestes Flaggschiff im Test.</p>
+        <p class="full-text" style="display:none;">Die RTX 5090 ist Nvidias neuestes Flaggschiff und soll die ultimative Gaming-Grafikkarte sein. Mit dem neuen Blackwell-Architektur verspricht Nvidia massive Leistungssteigerungen gegenüber der RTX 4090. Die Karte basiert auf dem GB202-Chip und verfügt über 32GB GDDR7-Speicher mit 512-bit Bus-Breite. Das ist ein enormer Sprung gegenüber den 24GB GDDR6X der RTX 4090. Die TDP liegt bei 600 Watt, was bedeutet, dass ihr ein starkes Netzteil mit mindestens 850W benötigt – am besten 1000W für Sicherheit. In unseren Benchmarks zeigt die Karte atemberaubende Ergebnisse: Bei 4K-Gaming mit Raytracing erreicht sie durchschnittlich 120 FPS in den neuesten Titeln wie Cyberpunk 2077, Hogwarts Legacy und Spider-Man 2 – ein Sprung von etwa 40% gegenüber dem Vorgänger. Auch bei reinem Rasterizing liegt sie weit ahead der Konkurrenz. Besonders beeindruckend ist die DLSS 4.0 Technologie, die mit dem neuen Multi-Frame-Generation-Feature noch mehr FPS herausholt. Die Kühlung wurde komplett überarbeitet und nutzt ein neues Dual-Axi-Flow-Kühlsystem, das die Karte trotz der hohen TDP erstaunlich leise hält. Im Idle-Modus ist sie kaum hörbar, unter Last bleibt sie mit 35dB angenehm leise. Das neue Design mit der silbernen Backplate und dem beleuchteten NV-Link-Anschluss sieht zudem sehr edel aus. Die Karte misst 336mm in der Länge und belegt 3 Slots – ihr solltet also genügend Platz im Gehäuse haben. Für Creators bietet die RTX 5090 auch enorme Vorteile: Die Encoding-Performance wurde verdoppelt, und bei 8K-Videobearbeitung ist sie 50% schneller als die RTX 4090. Der Preis von knapp 2.000 Euro UVP ist natürlich gesalzen, aber für Enthusiasten und professionelle User ist es diecurrently beste Wahl auf dem Markt. Wer nicht so viel ausgeben möchte, sollte einen Blick auf die RTX 5080 werfen, die für etwa 1.000 Euro kommt und immer noch exzellente Performance bietet. Insgesamt ist die RTX 5090 ein Monster von einer Grafikkarte – aber ob sie den Preis wert ist, muss jeder selbst entscheiden.</p>
+        <div class="card-meta-row" style="margin-top:8px;">
+          <span>19. Mrz 2026</span>
+          <div class="meta-dot"></div>
+          <span>9.1/10</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- LATEST POSTS -->
+<section class="section" style="padding-top:0;" id="latestPosts">
+  <div class="section-header">
+    <div class="section-title">Neueste Posts</div>
+    <a href="#" class="see-all" id="allPostsBtn">Alle ansehen →</a>
+  </div>
+  <div class="posts-grid" id="newsSection">
+
+    <div class="post-card">
+      <div class="post-thumb-bar pt-fps">
+        <span style="position:relative;z-index:1;font-size:52px;">🔫</span>
+      </div>
+      <div class="post-card-body">
+        <div class="card-tags"><span class="ctag ctag-fps">FPS</span><span class="ctag ctag-guide">Guide</span></div>
+        <h3>Die 10 besten FPS-Mäuse 2026 im Vergleich</h3>
+        <p class="preview-text">Von Budget bis High-End — welche Maus für welches Spielgefühl.</p>
+        <p class="full-text" style="display:none;">Die Wahl der richtigen Gaming-Maus kann den Unterschied zwischen Sieg und Niederlage ausmachen. In diesem Guide testen wir die 10 besten FPS-Mäuse des Jahres 2026 und vergleichen Sensor, Gewicht, Form und Preis. Platz 1: Die neue Razer Viper V3 Pro beeindruckt mit nur 54 Gramm Gewicht und dem präzisen Focus Pro 35K Sensor – perfekt für schnelle 180-Grad-Drehungen. Platz 2: Logitech G Pro X Superlight 2 bietet den verbesserten Hero 25K Sensor und ein erneuertes Design, das noch besser in der Hand liegt. Platz 3: Die SteelSeries Aerox 5 überzeugt mit wasserdichtem Design und 8.000 Hz Polling-Rate. Platz 4: Die Zowie EC2-C ist der Klassiker für Claw-Grip-Spieler mit perfekter Form. Platz 5: Razer DeathAdder V3 Pro bietet den besten Sensor seiner Klasse. Platz 6: Die EndgameGear OP1 68g ist der Budget-Kracher unter 50 Euro. Platz 7: Die Finalmouse Starlight-12 bietet einzigartiges Design und Top-Performance. Platz 8: Die Cooler Master MM711 ist leicht und günstig. Platz 9: Die Logitech G305 ist der beste Einsteiger-Maus unter 40 Euro. Platz 10: Die SteelSeries Rival 3 bietet tolles Preis-Leistungs-Verhältnis.</p>
+        <div class="post-footer">
+          <span>18. Mrz · 7 Min</span>
+          <span class="post-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-card">
+      <div class="post-thumb-bar pt-hw">
+        <span style="position:relative;z-index:1;font-size:52px;">⚡</span>
+      </div>
+      <div class="post-card-body">
+        <div class="card-tags"><span class="ctag ctag-news">News</span></div>
+        <h3>GTA VI Release-Datum offiziell — was wir wissen</h3>
+        <p class="preview-text">Rockstar hat gesprochen. Alle Details, Infos und unsere Einschätzung.</p>
+        <p class="full-text" style="display:none;">Grand Theft Auto VI ist endlich offiziell angekündigt und Rockstar Games hat das Releasedatum bestätigt: Herbst 2026 für PS5 und Xbox Series X|S, PC folgt später. Der erste Trailer zeigt uns die Rückkehr nach Vice City, diesmal mit zwei Protagonisten – Lucia und Jason – ein GTA-First als weibliche Hauptfigur. Die Grafikengine wurde komplett überarbeitet und liefert atemberaubende Ergebnisse: dynamisches Wetter, fotorealistische Beleuchtung und eine lebendige Stadt. Das Gameplay verspricht die größte Open World aller Zeiten mit fünf Stadtvierteln. Erstmals gibt es Online-Multiplayer von Anfang an. Die Gerüchteküche brodelt: Wird es Mikrotransaktionen geben? Wie groß wird die Map wirklich? Alle Infos und Einschätzung findest du in diesem Artikel.</p>
+        <div class="post-footer">
+          <span>16. Mrz · 4 Min</span>
+          <span class="post-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-card">
+      <div class="post-thumb-bar pt-str">
+        <span style="position:relative;z-index:1;font-size:52px;">🏗️</span>
+      </div>
+      <div class="post-card-body">
+        <div class="card-tags"><span class="ctag ctag-guide">Guide</span></div>
+        <h3>Gaming-PC für 800€ bauen: Schritt für Schritt</h3>
+        <p class="preview-text">Kein Vorwissen nötig. Unser Guide führt dich durch den kompletten Build.</p>
+        <p class="full-text" style="display:none;">Ein Gaming-PC muss kein Vermögen kosten. In diesem Guide zeigen wir dir, wie du für 800 Euro einen soliden Gaming-Rechner zusammenbaust, der aktuelle Spiele in Full HD mit hohen Einstellungen meistert. Die Teile-Liste: Prozessor AMD Ryzen 5 7600 (ca. 180€) – Sechs Kerne, zwölf Threads, starke Single-Core-Leistung für Gaming. Mainboard Gigabyte B650M DS3H (ca. 90€) – Solid und zukunftssicher mit DDR5-Support. Arbeitsspeicher Corsair Vengeance 32GB DDR5-5600 (ca. 90€) – 32GB sind heute Standard und reichen für alle Spiele. Grafikkarte Sapphire Radeon RX 7800 XT (ca. 400€) – Das Highlight: Diese Karte liefert in 1080p locker 100+ FPS und sogar 1440p ist drin. SSD Kingston A400 1TB (ca. 60€) – Schnelle Ladezeiten für Spiele und System. Netzteil be quiet! System Power 10 650W (ca. 80€) – Zuverlässig und mit 80+ Bronze effizient. Gehäuse Corsair Carbide 175R (ca. 70€) – Schlicht, solide, gute Kühlung. Schritt 1: CPU und Kühler montieren –Hebel am Sockel anheben, CPU vorsichtig einsetzen, Kühler auftragen und befestigen. Schritt 2: RAM einstecken – Die Riegel in dieSlots drücken bis sie einrasten. Schritt 3: Mainboard ins Gehäuse – Schrauben nicht vergessen und alle Stand-offs montieren. Schritt 4: Netzteil montieren – Mit den vier Schrauben befestigen und die Kabel nach hinten verlegen. Schritt 5: Grafikkarte einbauen – PCIe-Slot öffnen, Karte einstecken und mit Schraube sichern. Schritt 6: Kabel anschließen – Frontpanel, CPU-Power, GPU-Power, SATA für SSD. Nach dem ersten Start: BIOS updaten, Windows installieren, Treiber laden von AMD und Mainboard-Hersteller. Fertig! Dieser PC läuft Cyberpunk, Starfield und alle aktuellen Titel flüssig. Perfekter Einstieg in die PC-Gaming-Welt.</p>
+        <div class="post-footer">
+          <span>13. Mrz · 15 Min</span>
+          <span class="post-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-card">
+      <div class="post-thumb-bar pt-rpg">
+        <span style="position:relative;z-index:1;font-size:52px;">🧙</span>
+      </div>
+      <div class="post-card-body">
+        <div class="card-tags"><span class="ctag ctag-rpg">RPG</span><span class="ctag ctag-review">Review</span></div>
+        <h3>Avowed — Obsidian kehrt zur alten Stärke zurück</h3>
+        <p class="preview-text">Endlich wieder ein RPG, das traut, komplex zu sein. Unser Urteil.</p>
+        <p class="full-text" style="display:none;">Avowed ist das neue Fantasy-RPG von Obsidian Entertainment und markiert die Rückkehr des Studios zu seinen Wurzeln – komplexen RPGs mit tiefgreifenden Entscheidungen. Das Spiel spielt in der Welt von Eora, bekannt aus Pillars of Eternity, und entführt uns in die mythische Ägäis, eine von Schiffsarden bevölkerte Inselgruppe voller Magie und Geheimnisse. Das Kampfsystem kombiniert Echtzeit-Action mit taktischen Elementen: Spieler können jederzeit zwischen Waffen wechseln, Zauber wirken oder die Umgebung nutzen. Die Klassenflexibilität ist beeindruckend – fast jeder Spielstil ist möglich, von Schwert und Schild bis zum reinen Magier. Was Avowed besonders macht: Die Dialogoptionen sind umfangreich und moralisch komplex. Entscheidungen haben echte Konsequenzen, und Nebenquests verweben sich oft auf überraschende Weise mit der Hauptgeschichte. Die Grafik ist atemberaubend: Von schneebedeckten Gipfeln bis zu dunklen Wäldern – jede Umgebung ist detailliert gestaltet. Die NPCs sind lebendig und haben eigene Geschichten. Negativ fällt auf: Die Open-World-Elemente fühlen sich manchmal wie Füller an, und das Finish bei Some-Bugs könnte besser sein. Dennoch: Avowed ist ein Triumph für Obsidian und beweist, dass klassische RPGs noch lange nicht tot sind. Für Fans von Fallout: New Vegas oder Pillars of Eternity ein Must-Play.</p>
+        <div class="post-footer">
+          <span>10. Mrz · 9 Min</span>
+          <span class="post-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- RELEASE KALENDER -->
+<section class="section" style="padding-top:0;" id="releaseSection">
+  <div class="section-header">
+    <div class="section-title">Kommende Releases</div>
+  </div>
+  <div id="releaseCalendarGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+  </div>
+</section>
+
+<!-- TRENDING + NEWSLETTER -->
+<section class="section" style="padding-top:0;">
+  <div class="trending-layout">
+    <div>
+      <div class="section-header">
+        <div class="section-title">Trending</div>
+      </div>
+      <div class="trending-list">
+        <div class="trending-item">
+          <div class="trend-num hot">01</div>
+          <div class="trend-body">
+            <div class="trend-title">Elden Ring Nightreign — Review</div>
+            <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:4px;">Das epische Open-World-Action-RPG im Test.</p>
+            <p class="full-text" style="display:none;">Elden Ring ist ein episches Open-World-Action-Rollenspiel, das von FromSoftware entwickelt und 2022 veröffentlicht wurde. Das Spiel spielt in den sogenannten Zwischenlanden, einer riesigen, atmosphärischen Welt voller Geheimnisse, Ruinen und gefährlicher Kreaturen. Spieler schlüpfen in die Rolle eines „Tarnished", der ohne Erinnerung in diese zerrissene Welt kommt und die Aufgabe hat, den Elden Ring wiederherzustellen und Elden Lord zu werden.</p>
+            <div class="trend-meta">
+              <span class="trend-views">▲ 14.2k Views</span>
+              <div class="meta-dot"></div>
+              <span>Review · Action-RPG</span>
+            </div>
+          </div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-num">02</div>
+          <div class="trend-body">
+            <div class="trend-title">Gaming-PC für 800€ bauen: Schritt für Schritt</div>
+            <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:4px;">Kein Vorwissen nötig. Unser Guide führt dich durch den kompletten Build.</p>
+            <p class="full-text" style="display:none;">Ein Gaming-PC muss kein Vermögen kosten. In diesem Guide zeigen wir dir, wie du für 800 Euro einen soliden Gaming-Rechner zusammenbaust. Die Teile-Liste: AMD Ryzen 5 7600, Gigabyte B650M Mainboard, 32GB DDR5 RAM, Sapphire Radeon RX 7800 XT, 1TB SSD, 650W Netzteil, Gehäuse. Der Zusammenbau ist einfacher als du denkst!</p>
+            <div class="trend-meta">
+              <span class="trend-views">▲ 9.8k Views</span>
+              <div class="meta-dot"></div>
+              <span>Guide · Hardware</span>
+            </div>
+          </div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-num">03</div>
+          <div class="trend-body">
+            <div class="trend-title">Die 10 besten FPS-Mäuse 2026</div>
+            <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:4px;">Von Budget bis High-End — welche Maus für welches Spielgefühl.</p>
+            <p class="full-text" style="display:none;">Die Wahl der richtigen Gaming-Maus kann den Unterschied zwischen Sieg und Niederlage ausmachen. In diesem Guide testen wir die 10 besten FPS-Mäuse des Jahres 2026. Platz 1: Razer Viper V3 Pro – nur 54 Gramm mit Focus Pro 35K Sensor. Platz 2: Logitech G Pro X Superlight 2 mit verbessertem Hero 25K. Platz 3: SteelSeries Aerox 5 mit 8.000 Hz Polling-Rate.</p>
+            <div class="trend-meta">
+              <span class="trend-views">▲ 7.1k Views</span>
+              <div class="meta-dot"></div>
+              <span>Guide · Hardware</span>
+            </div>
+          </div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-num">04</div>
+          <div class="trend-body">
+            <div class="trend-title">RTX 5090 Test — Nvidia übertreibt</div>
+            <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:4px;">Nvidias neuestes Flaggschiff im Test.</p>
+            <p class="full-text" style="display:none;">Die RTX 5090 ist Nvidias neuestes Flaggschiff und soll die ultimative Gaming-Grafikkarte sein. Mit dem neuen Blackwell-Architektur verspricht Nvidia massive Leistungssteigerungen gegenüber der RTX 4090. In unseren Benchmarks zeigt die Karte atemberaubende Ergebnisse: Bei 4K-Gaming mit Raytracing erreicht sie durchschnittlich 120 FPS – ein Sprung von etwa 40% gegenüber dem Vorgänger. Die Karte basiert auf dem GB202-Chip und verfügt über 32GB GDDR7-Speicher mit 512-bit Bus-Breite. Die TDP liegt bei 600 Watt, was ein starkes Netzteil erfordert. Besonders beeindruckend ist die DLSS 4.0 Technologie mit Multi-Frame-Generation. Die Kühlung wurde komplett überarbeitet und nutzt ein neues Dual-Axi-Flow-Kühlsystem, das die Karte trotz der hohen TDP erstaunlich leise hält. Der Preis von knapp 2.000 Euro UVP ist gesalzen, aber für Enthusiasten bietet sie die currently beste Performance auf dem Markt.</p>
+            <div class="trend-meta">
+              <span class="trend-views">▲ 6.3k Views</span>
+              <div class="meta-dot"></div>
+              <span>Review · Hardware</span>
+            </div>
+          </div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-num">05</div>
+          <div class="trend-body">
+            <div class="trend-title">GTA VI — Alles was wir wissen</div>
+            <p class="preview-text" style="font-size:13px;color:var(--muted);margin-top:4px;">Rockstar hat gesprochen. Alle Details, Infos und unsere Einschätzung.</p>
+            <p class="full-text" style="display:none;">Grand Theft Auto VI ist endlich offiziell angekündigt und Rockstar Games hat das Releasedatum bestätigt: Herbst 2026 für PS5 und Xbox Series X|S, PC folgt später. Der erste Trailer zeigt uns die Rückkehr nach Vice City, diesmal mit zwei Protagonisten – Lucia und Jason – ein GTA-First als weibliche Hauptfigur.</p>
+            <div class="trend-meta">
+              <span class="trend-views">▲ 5.7k Views</span>
+              <div class="meta-dot"></div>
+              <span>News · Preview</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-header">
+        <div class="section-title">Newsletter</div>
+      </div>
+      <div class="newsletter-box" id="newsletterSection">
+        <div class="newsletter-box-content">
+          <span class="nl-icon">📡</span>
+          <h3>Kein Post verpassen</h3>
+          <p>Jede Woche die besten Reviews, Guides und News – direkt in dein Postfach. Kein Spam, versprochen.</p>
+          <input class="nl-input" type="email" placeholder="deine@email.de">
+          <button class="nl-btn">Jetzt anmelden</button>
+          <div class="nl-note">Kein Spam · Jederzeit kündbar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section" style="padding-top:0;">
+  <div class="section-header">
+    <div class="section-title">Kategorien</div>
+  </div>
+  <div class="categories-grid">
+    <div class="cat-card">
+      <span class="cat-icon">⚔️</span>
+      <div class="cat-name">Reviews</div>
+      <div class="cat-count">42 Artikel</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">🗺️</span>
+      <div class="cat-name">Guides</div>
+      <div class="cat-count">31 Artikel</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">⚡</span>
+      <div class="cat-name">News</div>
+      <div class="cat-count">58 Artikel</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">🖥️</span>
+      <div class="cat-name">Hardware</div>
+      <div class="cat-count">24 Artikel</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">🏆</span>
+      <div class="cat-name">Esports</div>
+      <div class="cat-count">19 Artikel</div>
+    </div>
+    <div class="cat-card">
+      <span class="cat-icon">💡</span>
+      <div class="cat-name">Meinung</div>
+      <div class="cat-count">15 Artikel</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <h4>[PIXELBYTE]</h4>
+    <p>Unabhängiges Tech &amp; Gaming Magazin aus Deutschland. Ehrliche Reviews, kein gesponsorten Mist.</p>
+  </div>
+  <div class="footer-col">
+    <h5>Inhalt</h5>
+    <a href="#">Reviews</a>
+    <a href="#">Guides</a>
+    <a href="#">News</a>
+    <a href="#">Hardware</a>
+    <a href="#">Esports</a>
+  </div>
+  <div class="footer-col">
+    <h5>Blog</h5>
+    <a href="#">Über uns</a>
+    <a href="#">Kontakt</a>
+    <a href="#">Newsletter</a>
+    <a href="#">RSS Feed</a>
+  </div>
+  <div class="footer-col">
+    <h5>Legal</h5>
+    <a href="#">Impressum</a>
+    <a href="#">Datenschutz</a>
+    <a href="#">Cookies</a>
+  </div>
+  <div class="footer-col">
+    <h5>Social</h5>
+    <a href="#">Twitter / X</a>
+    <a href="#">Discord</a>
+    <a href="#">YouTube</a>
+    <a href="#">Instagram</a>
+  </div>
+</footer>
+
+<div class="footer-bottom">
+  <span>© 2026 PIXELBYTE — Made with <span>♥</span> in Deutschland</span>
+  <span>v2.0 · Dark Mode only · No Ads</span>
+</div>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop">↑</button>
+
+
+<!-- MODAL -->
+<div id="postModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close">&times;</span>
+    <h2 id="modalTitle"></h2>
+    <div id="modalList"></div>
+    <p id="modalText"></p>
+    <div class="modal-meta">
+      <span id="modalDate"></span>
+      <span id="modalScore"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ALIEN GAME MODAL -->
+<div id="alienGameModal" class="modal" style="background:rgba(0,0,0,0.95);display:none;">
+  <div class="modal-content" style="background:linear-gradient(135deg,#0a0a0f,#1a0a2e);border:2px solid var(--accent2);max-width:500px;">
+    <span class="modal-close" onclick="document.getElementById('alienGameModal').style.display='none'" style="position:absolute;top:15px;right:20px;font-size:32px;">&times;</span>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <div style="font-size:48px;margin-bottom:10px;">👽</div>
+      <h2 style="font-family:var(--font-display);color:var(--accent);letter-spacing:3px;">INVASION</h2>
+      <p style="color:var(--muted);font-size:12px;">Schieße die Aliens bevor sie entkommen!</p>
+    </div>
+    <div id="gameCanvas" style="background:#000;border:1px solid var(--accent2);margin-bottom:1rem;position:relative;height:300px;overflow:hidden;">
+      <canvas id="game" width="460" height="300" style="display:block;"></canvas>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:14px;">
+      <div style="color:var(--accent2);">Score: <span id="gameScore" style="color:var(--accent);font-weight:700;">0</span></div>
+      <button id="gameStartBtn" style="background:var(--accent);color:#000;border:none;padding:8px 20px;border-radius:2px;font-family:var(--font-mono);font-weight:700;cursor:pointer;letter-spacing:1px;">START</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME SELECT MODAL -->
+<div id="gameSelectModal" class="modal" style="background:rgba(10,10,15,0.95);">
+  <div class="modal-content" style="background:var(--bg2);border:1px solid var(--border);max-width:400px;">
+    <span class="modal-close" onclick="document.getElementById('gameSelectModal').style.display='none'" style="position:absolute;top:15px;right:20px;font-size:32px;">&times;</span>
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <h2 style="font-family:var(--font-display);color:var(--accent);letter-spacing:3px;margin-bottom:8px;">SPIELE</h2>
+      <p style="color:var(--muted);font-size:12px;">Wähle ein Minispiel</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button onclick="document.getElementById('gameSelectModal').style.display='none';setTimeout(()=>document.getElementById('alienGameModal').style.display='flex',100)" style="background:var(--bg3);border:1px solid var(--border);padding:16px;border-radius:4px;display:flex;align-items:center;gap:16px;transition:all 0.2s;text-align:left;" onmouseover="this.style.borderColor='var(--accent2)';this.style.background='var(--surface)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+        <span style="font-size:32px;">👽</span>
+        <div><div style="font-family:var(--font-display);color:var(--text);font-size:14px;">INVASION</div><div style="font-size:11px;color:var(--muted);">Schieße die Aliens</div></div>
+      </button>
+      <button onclick="document.getElementById('gameSelectModal').style.display='none';setTimeout(()=>document.getElementById('snakeGameModal').style.display='flex',100)" style="background:var(--bg3);border:1px solid var(--border);padding:16px;border-radius:4px;display:flex;align-items:center;gap:16px;transition:all 0.2s;text-align:left;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+        <span style="font-size:32px;">🐍</span>
+        <div><div style="font-family:var(--font-display);color:var(--text);font-size:14px;">SNAKE</div><div style="font-size:11px;color:var(--muted);">Klassisches Schlangenspiel</div></div>
+      </button>
+      <button onclick="document.getElementById('gameSelectModal').style.display='none';setTimeout(()=>document.getElementById('clickerGameModal').style.display='flex',100)" style="background:var(--bg3);border:1px solid var(--border);padding:16px;border-radius:4px;display:flex;align-items:center;gap:16px;transition:all 0.2s;text-align:left;" onmouseover="this.style.borderColor='var(--accent3)';this.style.background='var(--surface)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+        <span style="font-size:32px;">⚡</span>
+        <div><div style="font-family:var(--font-display);color:var(--text);font-size:14px;">CLICKER</div><div style="font-size:11px;color:var(--muted);">Klicke so schnell du kannst</div></div>
+      </button>
+      <button onclick="document.getElementById('gameSelectModal').style.display='none';setTimeout(()=>document.getElementById('pcBuilderModal').style.display='flex',100)" style="background:var(--bg3);border:1px solid var(--border);padding:16px;border-radius:4px;display:flex;align-items:center;gap:16px;transition:all 0.2s;text-align:left;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--surface)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'">
+        <span style="font-size:32px;">🖥️</span>
+        <div><div style="font-family:var(--font-display);color:var(--text);font-size:14px;">PC BUILDER</div><div style="font-size:11px;color:var(--muted);">Baue deinen Traum-PC</div></div>
+      </button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- SNAKE GAME MODAL -->
+<div id="snakeGameModal" class="modal" style="background:rgba(0,0,0,0.95);">
+  <div class="modal-content" style="background:linear-gradient(135deg,#0a0f0a,#0f1a0f);border:2px solid var(--accent);max-width:500px;">
+    <span class="modal-close" onclick="document.getElementById('snakeGameModal').style.display='none'" style="position:absolute;top:15px;right:20px;font-size:32px;">&times;</span>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <div style="font-size:48px;margin-bottom:10px;">🐍</div>
+      <h2 style="font-family:var(--font-display);color:var(--accent);letter-spacing:3px;">SNAKE</h2>
+      <p style="color:var(--muted);font-size:12px;">Pfeiltasten steuern • Sammle das Futter</p>
+    </div>
+    <div style="background:#000;border:1px solid var(--accent);margin-bottom:1rem;">
+      <canvas id="snakeCanvas" width="460" height="300" style="display:block;"></canvas>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:14px;">
+      <div style="color:var(--accent);">Score: <span id="snakeScore" style="color:var(--accent);font-weight:700;">0</span></div>
+      <button id="snakeStartBtn" style="background:var(--accent);color:#000;border:none;padding:8px 20px;border-radius:2px;font-family:var(--font-mono);font-weight:700;cursor:pointer;letter-spacing:1px;">START</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLICKER GAME MODAL -->
+<div id="clickerGameModal" class="modal" style="background:rgba(0,0,0,0.95);">
+  <div class="modal-content" style="background:linear-gradient(135deg,#0f0a1a,#1a0a2e);border:2px solid var(--accent3);max-width:500px;">
+    <span class="modal-close" onclick="document.getElementById('clickerGameModal').style.display='none'" style="position:absolute;top:15px;right:20px;font-size:32px;">&times;</span>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <div style="font-size:48px;margin-bottom:10px;">⚡</div>
+      <h2 style="font-family:var(--font-display);color:var(--accent3);letter-spacing:3px;">CLICKER</h2>
+      <p style="color:var(--muted);font-size:12px;">Klicke so schnell du kannst in 10 Sekunden!</p>
+    </div>
+    <div style="text-align:center;padding:2rem 0;">
+      <div id="clickerTarget" style="width:120px;height:120px;margin:0 auto;background:var(--accent3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 30px rgba(245,158,11,0.4);transition:transform 0.1s;">👆</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:14px;">
+      <div style="color:var(--accent3);">Clicks: <span id="clickerScore" style="color:var(--text);font-weight:700;">0</span></div>
+      <div style="color:var(--muted);">Zeit: <span id="clickerTime" style="color:var(--accent3);font-weight:700;">10</span>s</div>
+    </div>
+    <button id="clickerStartBtn" style="width:100%;background:var(--accent3);color:#000;border:none;padding:12px;border-radius:2px;font-family:var(--font-mono);font-weight:700;letter-spacing:1px;margin-top:1rem;">START</button>
+  </div>
+</div>
+
+<!-- PC BUILDER MODAL -->
+<div id="pcBuilderModal" class="modal" style="background:rgba(0,0,0,0.95);">
+  <div class="modal-content" style="background:linear-gradient(135deg,#0a0a0f,#0f1a1a);border:2px solid var(--accent);max-width:600px;">
+    <span class="modal-close" onclick="document.getElementById('pcBuilderModal').style.display='none'" style="position:absolute;top:15px;right:20px;font-size:32px;">&times;</span>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <div style="font-size:48px;margin-bottom:10px;">🖥️</div>
+      <h2 style="font-family:var(--font-display);color:var(--accent);letter-spacing:3px;">PC BUILDER</h2>
+      <p style="color:var(--muted);font-size:12px;">Wähle deine Komponenten • Budget: 2000€</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
+      <div class="pc-part" onclick="selectPart('cpu')" id="part-cpu" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;text-align:center;cursor:pointer;">
+        <div style="font-size:24px;margin-bottom:5px;">💻</div>
+        <div style="font-size:11px;color:var(--text);">CPU</div>
+        <div class="pc-part-selected" style="display:none;color:var(--accent);font-size:10px;">✓ Ausgewählt</div>
+      </div>
+      <div class="pc-part" onclick="selectPart('gpu')" id="part-gpu" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;text-align:center;cursor:pointer;">
+        <div style="font-size:24px;margin-bottom:5px;">🎮</div>
+        <div style="font-size:11px;color:var(--text);">GPU</div>
+        <div class="pc-part-selected" style="display:none;color:var(--accent);font-size:10px;">✓ Ausgewählt</div>
+      </div>
+      <div class="pc-part" onclick="selectPart('ram')" id="part-ram" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;text-align:center;cursor:pointer;">
+        <div style="font-size:24px;margin-bottom:5px;">🧠</div>
+        <div style="font-size:11px;color:var(--text);">RAM</div>
+        <div class="pc-part-selected" style="display:none;color:var(--accent);font-size:10px;">✓ Ausgewählt</div>
+      </div>
+      <div class="pc-part" onclick="selectPart('ssd')" id="part-ssd" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;text-align:center;cursor:pointer;">
+        <div style="font-size:24px;margin-bottom:5px;">💾</div>
+        <div style="font-size:11px;color:var(--text);">SSD</div>
+        <div class="pc-part-selected" style="display:none;color:var(--accent);font-size:10px;">✓ Ausgewählt</div>
+      </div>
+      <div class="pc-part" onclick="selectPart('psu')" id="part-psu" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;text-align:center;cursor:pointer;">
+        <div style="font-size:24px;margin-bottom:5px;">⚡</div>
+        <div style="font-size:11px;color:var(--text);">Netzteil</div>
+        <div class="pc-part-selected" style="display:none;color:var(--accent);font-size:10px;">✓ Ausgewählt</div>
+      </div>
+      <div class="pc-part" onclick="selectPart('case')" id="part-case" style="background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;text-align:center;cursor:pointer;">
+        <div style="font-size:24px;margin-bottom:5px;">📦</div>
+        <div style="font-size:11px;color:var(--text);">Gehäuse</div>
+        <div class="pc-part-selected" style="display:none;color:var(--accent);font-size:10px;">✓ Ausgewählt</div>
+      </div>
+    </div>
+    <div id="pcBuilderOptions" style="display:none;background:var(--surface);border:1px solid var(--border);padding:12px;border-radius:4px;margin-bottom:1rem;max-height:200px;overflow-y:auto;">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:14px;margin-bottom:1rem;">
+      <div style="color:var(--accent);">Budget: <span id="pcBudget" style="color:var(--text);font-weight:700;">0</span>€ / 2000€</div>
+      <button id="pcBuildBtn" style="background:var(--accent);color:#000;border:none;padding:8px 20px;border-radius:2px;font-family:var(--font-mono);font-weight:700;letter-spacing:1px;">BAUEN</button>
+    </div>
+    <div id="pcResult" style="display:none;text-align:center;padding:1rem;background:var(--bg);border:1px solid var(--accent);border-radius:4px;">
+      <div style="font-size:24px;margin-bottom:10px;">🎉</div>
+      <div style="font-family:var(--font-display);color:var(--accent);font-size:16px;margin-bottom:8px;">PC GEBAUT!</div>
+      <div id="pcStats" style="font-size:12px;color:var(--muted);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RELEASE CALENDAR MODAL -->
+<div id="releaseCalendarModal" class="modal" style="background:rgba(0,0,0,0.95);">
+  <div class="modal-content" style="background:linear-gradient(135deg,#0a0a0f,#1a0a1a);border:2px solid var(--accent2);max-width:500px;">
+    <span class="modal-close" onclick="document.getElementById('releaseCalendarModal').style.display='none'" style="position:absolute;top:15px;right:20px;font-size:32px;">&times;</span>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <div style="font-size:48px;margin-bottom:10px;">📅</div>
+      <h2 style="font-family:var(--font-display);color:var(--accent2);letter-spacing:3px;">RELEASES 2026</h2>
+      <p style="color:var(--muted);font-size:12px;">Die期待的 Spiele dieses Jahres</p>
+    </div>
+    <div id="releaseList" style="max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
+    </div>
+  </div>
+</div>
+
+<style>
+.modal { position: fixed; inset: 0; background: rgba(10,10,15,0.9); display: none; align-items: center; justify-content: center; z-index: 99999; }
+.modal-content { background: var(--bg2); padding: 2rem; max-width: 600px; width: 90%; border: 1px solid var(--border); border-radius: 4px; }
+.modal-close { position: absolute; top: 20px; right: 30px; font-size: 28px; cursor: pointer; color: var(--accent); }
+.modal h2 { margin-bottom: 1rem; }
+.modal p { color: var(--muted); margin-bottom: 1rem; }
+.modal-meta { font-size: 12px; color: var(--muted); display: flex; gap: 1rem; }
+.modal-review-list { display: none; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 1rem; }
+.modal-review-item { padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+.modal-review-item:hover { border-color: var(--accent); background: var(--bg3); }
+.modal-review-item h4 { font-family: var(--font-display); font-size: 13px; margin-bottom: 4px; color: var(--text); }
+.modal-review-item p { font-size: 12px; color: var(--muted); margin: 0; }
+.modal-review-item .score { color: var(--accent); font-weight: 700; }
+    
+    /* Game Select Modal */
+    #gameSelectModal .modal-content button:hover { transform: scale(1.02); }
+</style>
+
+<script>
+const modal = document.getElementById("postModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalText = document.getElementById("modalText");
+const modalDate = document.getElementById("modalDate");
+const modalScore = document.getElementById("modalScore");
+const closeBtn = document.querySelector(".modal-close");
+
+function resetModal() { modal.style.display = "none"; modalText.style.display = "block"; document.getElementById("modalList").innerHTML = ""; }
+closeBtn.onclick = () => resetModal();
+window.onclick = (e) => { if (e.target === modal) resetModal(); };
+
+document.querySelectorAll(".post-card, .featured-main, .featured-side, .trending-item").forEach(card => {
+  card.addEventListener("click", () => {
+    const title = card.querySelector("h2, h3, .trend-title")?.innerText || "Kein Titel";
+    const fullText = card.querySelector(".full-text");
+    const text = fullText ? fullText.innerText : (card.querySelector("p")?.innerText || "Keine Beschreibung verfügbar");
+    modalTitle.innerText = title;
+    modalText.innerText = text;
+    modalDate.innerText = "PIXELBYTE Artikel";
+    modalScore.innerText = "★ Review";
+    modal.style.display = "flex";
+  });
+});
+
+const reviews = [
+  { title: "Counter-Strike 2 — Das Comeback", preview: "Valve hat CS neu erfunden. Lohnt sich das Upgrade?", full: "Counter-Strike 2 ist Valves großes Reboot des legendären Shooters und bringt das Spiel in die Source-2-Engine. Die Grafik wurde komplett überarbeitet: realistische Beleuchtung, verbesserte Texturen und atemberaubende Effekte. Das Gameplay fühlt sich vertraut an, aber die Physics-Updates machen jeden Schuss präziser. Das neue Subsystem für Granaten ermöglicht totally neue Strategien – Rauchgranaten verteilen sich jetzt dynamisch. Die Server-Infrastruktur wurde komplett überholt: 128 Tick, verbesserte Anti-Cheat und stabile Matches. Negativ: Die Maps wurden teils stark verändert, was Altveteranen frustrieren kann. Fazit: CS2 ist ein gelungenes Upgrade und der neue Standard für kompetitive Shooter." },
+  { title: "Call of Duty 2026 — Der neue Standard?", preview: "Modern Warfare 4 setzt neue Maßstäbe.", full: "Call of Duty Modern Warfare 4 setzt die Saga fort und überrascht mit unerwarteter Tiefe. Die Kampagne bietet über 20 Missionen mit echten Entscheidungen, die den Verlauf beeinflussen. Der Multiplayer bringt das bewährte Loadout-System zurück, diesmal mit mehr Anpassungsmöglichkeiten. Besonders beeindruckend: Die Grafik auf Unreal Engine 5 liefert fotorealistische Umgebungen. Das neue Warzone 3.0 integriert sich nahtlos und bietet einen Battle-Royale-Modus mit 150 Spielern. Die Zombie-Modus kehrt mit koop-Gameplay zurück. Kritikpunkt: Das Spiel braucht immense Speicherplatz und leistungsstarke Hardware. Trotzdem ein Pflichtkauf für Shooter-Fans." },
+  { title: "Monster Hunter Wilds — Die Rückkehr des Königs", preview: "Capcom übertrifft sich selbst.", full: "Monster Hunter Wilds ist das bisher ambitionierteste Spiel der Serie. Die offene Welt ist atemberaubend: Von schneebedeckten Gipfeln bis zu Wüsten mit Sandstürmen – jede Zone bietet einzigartige Ökosysteme. Die neuen Waffen, darunter das mächtige Tonfa, erweitern das Kampfsystem enorm. Die Quests sind abwechslungsreicher und die Monster-KI wurde verbessert – sie jagen dich jetzt aktiv. Der Koop-Modus funktioniert endlich nahtlos, auch über Plattformen hinweg. Die Grafik auf PS5 und Xbox Series X ist spektakulär, mit flüssigen 60 FPS im Performance-Modus. Capcom hat alle Kritikpunkte der Vorgänger adressiert. Ein Meisterwerk!" },
+  { title: "The Witcher 4 — CD Projekt Red riskiert alles", preview: "Ein neues Kapitel beginnt.", full: "The Witcher 4 startet eine neue Saga mit einer neuen Protagonistin – Ciri als Hauptcharakter. CD Projekt Red hat die Engine komplett überarbeitet und liefert Grafik auf next-Gen-Niveau. Das Kampfsystem wurde actionreicher, behält aber die taktischen Elemente der Serie. Die Entscheidungen haben noch mehr Gewicht und beeinflussen die gesamte Spielwelt. Die Quests sind vielfältig: von kurzen Nebenaufgaben bis zu mehrstündigen Hauptmissionen. Die Open World ist lebendig und voller Geheimnisse. Neu ist ein überarbeitetes Crafting-System und die Möglichkeit, eigene Hexer-Schule zu gründen. Ein würdiger Nachfolger der Serie." },
+  { title: "Elden Ring Shadow of the Erdtree 2 — Mehr ist mehr", preview: "FromSoftware serviert Nachschlag.", full: "Der neue DLC zu Elden Ring erweitert die Zwischenlande um eine neue, riesige Zone. Die neuen Bosse gehören zu den schwersten des gesamten Spiels – wie von FromSoftware gewohnt. Das neue Waffensystem bringt frische Spielmechaniken und die Lore wird weiter vertieft. Die Map ist etwa so groß wie das Original und bietet neue Dungeons, Secrets und Herausforderungen. Die Grafik wurde leicht verbessert und die Performance optimiert. Wer das Original geliebt hat, wird diesen DLC nicht verpassen wollen. Ein must-have für Soulslike-Fans." },
+  { title: "FIFA 27 — Der letzte Name?", preview: "EA revolutioniert die Serie.", full: "FIFA 27 bringt massive Änderungen: Ein neuer Name, neues Gameplay und ein verbessertes Karrieremodus. Das Hypermotion-V liefert die realistischsten Animationen bisher. Der neue Karrieremodus erlaubt endlich echte Manager-Entscheidungen und eine detaillierte Jugendakademie. Ultimate Team wurde überarbeitet und ist weniger pay-to-win. Die Grafik auf Current-Gen ist beeindruckend, besonders bei Stadionatmosphäre und Spieler-Modellen. Die Lizenzen wurden erweitert, inklusive neuer Ligen. Es gibt auch einen überarbeiteten Pro-Club-Modus. Ein starkes Jahr für den Fußball-Klassiker." },
+  { title: "Diablo 4 Vessel of Hatred — Der Teufel steckt im Detail", preview: "Blizzard liefert erneut ab.", full: "Der zweite DLC zu Diablo 4 führt eine neue Klasse ein: den Spiritborn, einen naturbasierten Kämpfer. Die neue Zone Nahantu ist wunderschön und voller Geheimnisse. Das Endgame wurde erweitert mit neuen Dungeons und dem versprochenen Tier-List-Update. Die Seasonal Updates kommen regelmäßig und halten das Spiel frisch. Die Grafik und das Gameplay sind die besten der Serie. Mikrotransaktionen sind weiterhin präsent, aber nicht mehr so aggressiv. Ein must-have für ARPG-Fans." },
+  { title: "Assassin's Creed Red — Feudal Japan", preview: "Ubisofts Traum wird wahr.", full: "Assassin's Creed Red spielt im feudalen Japan und erfüllt einen langjährigen Fan-Traum. Der Protagonist ist ein japanischer Assassin mit einer neuen Parkour-Mechanik. Die Open World ist die bisher schönste der Serie: Kirschblüten, Bambus-Wälder und lebhafte Städte. Das Kampfsystem kombiniert Stealth und Action perfekt. Die Hauptquest ist etwa 30 Stunden lang, plus dutzende Nebenquests. Die neue Gilden-Mechanik erlaubt das Rekrutieren von Verbündeten. Multiplayer-Missionen sind integriert. Ubisoft hat aus den Fehlern der letzten Teile gelernt. Ein Highlight!" },
+  { title: "League of Legends — Der Animierte Film", preview: "Riot expandiert ins Filmgeschäft.", full: "Riot Games kündigt einen offiziellen League of Legends Animated Series an, produziert von Fortiche (Arcane). Die Serie wird die Geschichte von Jinx und Vi erzählen und direkt an die Ereignisse von Arcane anknüpfen. Der Trailer zeigt die erwartete atemberaubende Animation und verspricht tiefgehende Charakterentwicklung. Zusätzlich wurde ein neues Spiel angekündigt: Ein Auto-Battler im LoL-Universum für Mobile. Riot positioniert sich als Full Entertainment Company. Die Community ist begeistert und die Erwartungen sind riesig." },
+  { title: "Minecraft 2 — Die Zukunft des Blockbaus", preview: "Mojang überrascht alle.", full: "Minecraft 2 wurde offiziell angekündigt und sieht fantastisch aus. Das Spiel behält den Charme des Originals, aber mit verbesserter Grafik, neuer Beleuchtung und neuen Blöcken. Die Worlds sind jetzt noch größer und die Caves komplett überarbeitet. Ein neues End-Game und Dungeons sorgen für mehr Content. Abwärtskompatität zum Original ist gegeben. Die Minecraft-Community ist gespalten: Manche wollen das Classic-Feeling, andere freuen sich auf die Modernisierung. Mojang verspricht beide Versionen zu unterstützen." },
+  { title: "Sea of Thieves 2 — Auf hoher See", preview: "Microsofts Piraten-Spiel wächst.", full: "Sea of Thieves 2 bringt eine neue Engine und neue Inseln. Die Schiffskämpfe wurden verbessert und es gibt endlich mehr an Land zu tun. Die neuen Fraktionen und Quests bieten stundenlangen Spaß. Die Grafik wurde auf next-Gen gehoben mit dynamic weather und lighting. Crossplay funktioniert jetzt noch besser. Das PvP wurde etwas entschärft für Casual-Spieler. Ein tolles Update für Fans und ein guter Einstieg für Neulinge." },
+  { title: "Palworld 2 — Die Evolution", preview: "Pokémon-Jäger wird erwachsen.", full: "Palworld 2 übertrifft alle Erwartungen. Die neue Open World ist riesig und die Anzahl der Pals wurde verdoppelt. Das Kampfsystem ist strategischer und die neue Zucht-Mechanik bietet endlose Möglichkeiten. Die Grafik ist deutlich verbessert und die Performance optimiert. Der Multiplayer funktioniert endlich stabil. Der Survival-Aspekt wurde vertieft mit Base-Building und Ressourcen-Management. Die Kontroverse um das Original ist vergessen – dieses Spiel steht eigenständig da." },
+];
+
+document.getElementById("allReviewsBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  let html = '<div class="modal-review-list" style="display:flex;">';
+  reviews.forEach((r, i) => {
+    html += `<div class="modal-review-item" data-index="${i}">
+      <h4>${r.title} <span class="score">★</span></h4>
+      <p>${r.preview}</p>
+    </div>`;
+  });
+  html += '</div>';
+  modalTitle.innerText = "Alle Reviews";
+  document.getElementById("modalList").innerHTML = html;
+  modalText.style.display = "none";
+  modalDate.innerText = "Klicke auf einen Artikel";
+  modalScore.innerText = "";
+  modal.style.display = "flex";
+  
+  document.querySelectorAll(".modal-review-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const idx = item.dataset.index;
+      const r = reviews[idx];
+      document.getElementById("modalList").innerHTML = "";
+      modalText.style.display = "block";
+      modalTitle.innerText = r.title;
+      modalText.innerText = r.full;
+      modalDate.innerText = "PIXELBYTE Review";
+      modalScore.innerText = "★ Review";
+    });
+  });
+});
+
+document.getElementById("navReviews").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("allReviewsBtn").click();
+});
+
+document.getElementById("aboutBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  modalText.style.display = "block";
+  document.getElementById("modalList").innerHTML = "";
+  modalTitle.innerText = "Über PIXELBYTE";
+  modalText.innerText = "PIXELBYTE ist dein deutschsprachiger Tech- und Gaming-Blog für ehrliche Reviews, tiefgehende Guides und aktuelle News aus der Welt der Videospiele und Technologie. Wir glauben an unabhängige Meinungen ohne gesponserten Mist – nur unsere ehrliche Meinung. Diese Website zu erstellen war gar nicht so einfach! Angefangen mit der Planung haben wir Wochen gebraucht, um das richtige Design-Konzept zu entwickeln. Das Dark Theme mit den typischen Gaming-Farben sollte modern und professionell wirken. Besonders herausfordernd war die Umsetzung des responsive Designs – von riesigen 4K-Monitoren bis zu kleinen Smartphone-Displays sollte alles gut aussehen. Die Modal-Funktion für die Artikel-Vorschauen erforderte viel JavaScript-Arbeit, damit der Content dynamisch geladen wird. Das Ticker-System im Header war anfangs fehlerhaft und sorgte für nächtliche Debugging-Sessions. Auch die Integration der Google Fonts und das Optimieren der Ladezeiten hat Zeit gekostet. Letztendlich sind wir stolz auf das Ergebnis: Eine schnelle, moderne Website, die genau das bietet, was wir uns vorgestellt haben – und das alles ohne WordPress oder andere CMS, sondern mit reinem HTML, CSS und JavaScript. Viel Spaß beim Lesen!";
+  modalDate.innerText = "PIXELBYTE";
+  modalScore.innerText = "★ Über uns";
+  modal.style.display = "flex";
+});
+
+const guides = [
+  { title: "Die 10 besten FPS-Mäuse 2026", preview: "Von Budget bis High-End — welche Maus für welches Spielgefühl.", full: "Die Wahl der richtigen Gaming-Maus kann den Unterschied zwischen Sieg und Niederlage ausmachen. In diesem Guide testen wir die 10 besten FPS-Mäuse des Jahres 2026 und vergleichen Sensor, Gewicht, Form und Preis. Platz 1: Die neue Razer Viper V3 Pro beeindruckt mit nur 54 Gramm Gewicht und dem präzisen Focus Pro 35K Sensor – perfekt für schnelle 180-Grad-Drehungen. Platz 2: Logitech G Pro X Superlight 2 bietet den verbesserten Hero 25K Sensor und ein erneuertes Design, das noch besser in der Hand liegt. Platz 3: Die SteelSeries Aerox 5 überzeugt mit wasserdichtem Design und 8.000 Hz Polling-Rate. Für Budget-Spieler empfehlen wir die EndgameGear OP1 68g – erstaunliche Qualität für unter 50 Euro." },
+  { title: "Gaming-PC für 800€ bauen", preview: "Kein Vorwissen nötig. Unser Guide führt dich durch den kompletten Build.", full: "Ein Gaming-PC muss kein Vermögen kosten. In diesem Guide zeigen wir dir, wie du für 800 Euro einen soliden Gaming-Rechner zusammenbaust, der aktuelle Spiele in Full HD mit hohen Einstellungen meistert. Die Teile-Liste: Prozessor AMD Ryzen 5 7600 (ca. 180€), Mainboard Gigabyte B650M (ca. 90€), 32GB DDR5 RAM (ca. 90€), Grafikkarte Sapphire Radeon RX 7800 XT (ca. 400€), 1TB SSD (ca. 60€), 650W Netzteil (ca. 80€), Gehäuse (ca. 70€). Der Zusammenbau ist einfacher als du denkst: Zuerst CPU und Kühler auf dem Mainboard montieren, dann RAM einstecken. Mainboard ins Gehäuse schrauben, Netzteil montieren, Grafikkarte einbauen und alle Kabel anschließen. Keine Sorge – wir erklären jeden Schritt mit Bildern. Nach dem ersten Start BIOS updaten, Windows installieren und Treiber laden. Fertig!" },
+  { title: "Die beste Gaming-Tastatur 2026", preview: "Mechanisch vs. Membran — was lohnt sich?", full: "Eine gute Tastatur ist entscheidend für jedes Gaming-Setup. Wir vergleichen die besten Modelle von Logitech, Razer, Corsair und mehr. Mechanische Tastaturen bieten das beste Feedback und Haltbarkeit, aber sind teurer. Membran-Tastaturen sind leiser und günstiger. Unsere Top-Picks: Corsair K70 RGB Pro (mechanisch), Razer Huntsman V3 Pro (optisch), Logitech G Pro Keyboard (kabellos). Wichtige Faktoren: Switch-Typ, RGB-Beleuchtung, Programmierung und Bauqualität." },
+  { title: "RTX 5090 vs RX 8900 XT", preview: "Der große GPU-Vergleich 2026", full: "Nvidia vs. AMD – wer gewinnt 2026? Die RTX 5090 bietet die beste Raytracing-Performance, während die RX 8900 XT bei reinem Rasterizing punkten kann. Wir vergleichen beide Karten in 12 Spielen bei 4K-Auflösung. Die RTX 5090 ist schneller bei Raytracing-Titeln wie Cyberpunk und Hogwarts Legacy. Die AMD-Karte bietet mehr VRAM und ist günstiger. Für reine Raytracing-Fans ist Nvidia die Wahl, für Rasterization-Leistung AMD." },
+  { title: "Monitor kalibrieren für Gaming", preview: "So optimierst du deinen Bildschirm", full: "Ein nicht kalibrierter Monitor kann dein Gaming-Erlebnis ruinieren. Wir zeigen dir, wie du Farben, Kontrast und Helligkeit optimal einstellst. Nutze die integrierten Gaming-Modi und pass sie an deine Bedürfnisse an. Wichtig: Nutze einen Farbkalibrierungskolben für exakte Ergebnisse. Für kompetitives Gaming empfehlen wir einen Monitor mit mindestens 144Hz und 1ms Reaktionszeit. IPS-Panels bieten die besten Farben, TN-Panels die schnellsten Reaktionszeiten." },
+  { title: "Headset-Guide: Das beste Audio fürs Gaming", preview: "Von 50€ bis 300€ — wir haben getestet.", full: "Sound kann den Unterschied machen. Wir testen die besten Gaming-Headsets: Von günstigen Einsteigermodellen bis zu High-End-Geräten. Wichtig ist der Klang: Surround-Sound, gutes Mikrofon und Tragekomfort. Unsere Top-Picks: HyperX Cloud III (Budget), SteelSeries Arctis Nova 7 (Mid-Range), Logitech G Pro X 2 (High-End). Achte auch auf kabellose Optionen für mehr Bewegungsfreiheit." },
+];
+
+document.getElementById("navGuides").addEventListener("click", (e) => {
+  e.preventDefault();
+  let html = '<div class="modal-review-list" style="display:flex;">';
+  guides.forEach((g, i) => {
+    html += `<div class="modal-review-item" data-index="${i}">
+      <h4>${g.title}</h4>
+      <p>${g.preview}</p>
+    </div>`;
+  });
+  html += '</div>';
+  modalTitle.innerText = "Guides";
+  document.getElementById("modalList").innerHTML = html;
+  modalText.style.display = "none";
+  modalDate.innerText = "Klicke auf einen Guide";
+  modalScore.innerText = "";
+  modal.style.display = "flex";
+  
+  document.querySelectorAll(".modal-review-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const idx = item.dataset.index;
+      const g = guides[idx];
+      document.getElementById("modalList").innerHTML = "";
+      modalText.style.display = "block";
+      modalTitle.innerText = g.title;
+      modalText.innerText = g.full;
+      modalDate.innerText = "PIXELBYTE Guide";
+      modalScore.innerText = "★ Guide";
+    });
+  });
+});
+
+const hardware = [
+  { title: "RTX 5090 Test: Nvidia übertreibt", preview: "Nvidias neuestes Flaggschiff im Test.", full: "Die RTX 5090 ist Nvidias neuestes Flaggschiff und soll die ultimative Gaming-Grafikkarte sein. Mit dem neuen Blackwell-Architektur verspricht Nvidia massive Leistungssteigerungen gegenüber der RTX 4090. In unseren Benchmarks zeigt die Karte atemberaubende Ergebnisse: Bei 4K-Gaming mit Raytracing erreicht sie durchschnittlich 120 FPS in den neuesten Titeln – ein Sprung von etwa 40% gegenüber dem Vorgänger. Doch der Preis ist entsprechend gesalzen: Mit knapp 2.000 Euro UVP ist die Karte kein Schnäppchen. Die Kühlung wurde komplett überarbeitet und hält die Karte trotz der hohen TDP von 600 Watt erstaunlich leise." },
+  { title: "Die beste Gaming-Tastatur 2026", preview: "Mechanisch vs. Membran — was lohnt sich?", full: "Eine gute Tastatur ist entscheidend für jedes Gaming-Setup. Wir vergleichen die besten Modelle von Logitech, Razer, Corsair und mehr. Mechanische Tastaturen bieten das beste Feedback und Haltbarkeit, aber sind teurer. Membran-Tastaturen sind leiser und günstiger." },
+  { title: "Monitor-Guide: 144Hz bis 360Hz", preview: "Welcher Monitor ist der richtige?", full: "Die Wahl des richtigen Monitors hängt von deinem Einsatzzweck ab. Für kompetitives Gaming empfehlen wir mindestens 144Hz mit 1ms Reaktionszeit. Für Story-Spiele reichen 60Hz." },
+  { title: "SSD vs HDD: Was lohnt sich 2026?", preview: "Die Wahrheit über Speicherlösungen.", full: "SSDs sind mittlerweile erschwinglich und bieten enorme Vorteile gegenüber HDDs. Wir erklären, wann eine HDD noch sinnvoll ist und wann eine SSD Pflicht sein sollte." },
+  { title: "Audio-Guide: Das beste Sound-Setup", preview: "Von Headset bis Lautsprecher.", full: "Guter Sound kann dein Gaming-Erlebnis verbessern. Wir vergleichen Gaming-Headsets, externe Soundkarten und Lautsprecher." },
+  { title: "Netzteil-Guide: Wie viel Watt brauchst du?", preview: "PSU-Größe richtig berechnen.", full: "Das richtige Netzteil ist entscheidend für die Stabilität deines Systems. Wir zeigen dir, wie du den Wattbedarf deines PCs berechnest und welches Netzteil du brauchst." },
+];
+
+document.getElementById("navHardware").addEventListener("click", (e) => {
+  e.preventDefault();
+  let html = '<div class="modal-review-list" style="display:flex;">';
+  hardware.forEach((h, i) => {
+    html += `<div class="modal-review-item" data-index="${i}">
+      <h4>${h.title}</h4>
+      <p>${h.preview}</p>
+    </div>`;
+  });
+  html += '</div>';
+  modalTitle.innerText = "Hardware";
+  document.getElementById("modalList").innerHTML = html;
+  modalText.style.display = "none";
+  modalDate.innerText = "Klicke auf einen Artikel";
+  modalScore.innerText = "";
+  modal.style.display = "flex";
+  
+  document.querySelectorAll(".modal-review-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const idx = item.dataset.index;
+      const h = hardware[idx];
+      document.getElementById("modalList").innerHTML = "";
+      modalText.style.display = "block";
+      modalTitle.innerText = h.title;
+      modalText.innerText = h.full;
+      modalDate.innerText = "PIXELBYTE Hardware";
+      modalScore.innerText = "★ Hardware";
+    });
+  });
+});
+
+const esports = [
+  { title: "Valorant Champions Tour 2026", preview: "Alle Infos zum größten Turnier des Jahres.", full: "Die VCT 2026 ist das größte Valorant-Event des Jahres mit einem Preisgeld von 1 Million Dollar. Die besten Teams aus aller Welt kämpfen um den Titel. Wir analysieren die Favoriten: Fnatic, Sentinels, DRX und die neuen Herausforderer." },
+  { title: "CS2 Major Copenhagen 2026", preview: "Das nächste Major steht an.", full: "Das CS2 Major in Kopenhagen bringt die besten Teams der Welt zusammen. Preisgeld: 1,25 Millionen Dollar. Favoriten sind Team Vitality, NAVI und G2 Esports." },
+  { title: "League of Legends Worlds 2026", preview: "Der Weg zum Champion.", full: "Die League of Legends Weltmeisterhaft 2026 findet in Europa statt. 24 Teams kämpfen um den begehrten Titel. Die asiatischen Teams bleiben die Favoriten, aber westliche Teams wie G2 und Fnatic wollen überraschen." },
+  { title: "The International 2026 — Dota 2", preview: "Der größte Prize-Pool der Geschichte?", full: "The International kehrt zurück mit einem erwarteten Preisgeld von über 40 Millionen Dollar. Die Favoriten: Team Spirit, Team Liquid und die neuen chinesischen Herausforderer." },
+  { title: "Evo 2026: Die größten Fights", preview: "Alle Infos zum Fight-Game-Highlight.", full: "Evo 2026 ist das größte Fighting-Game-Event des Jahres. Über 10.000 Spieler treten in Spielen wie Street Fighter 6, Tekken 8 und Guilty Gear Strive an." },
+  { title: "Overwatch League 2026", preview: "Die Rückkehr der Königsklasse.", full: "Die Overwatch League startet in die neue Season mit überarbeiteten Regeln und neuen Teams. Der neue Modus bringt frischen Wind in den kompetitiven Play." },
+];
+
+document.getElementById("navEsports").addEventListener("click", (e) => {
+  e.preventDefault();
+  let html = '<div class="modal-review-list" style="display:flex;">';
+  esports.forEach((es, i) => {
+    html += `<div class="modal-review-item" data-index="${i}">
+      <h4>${es.title}</h4>
+      <p>${es.preview}</p>
+    </div>`;
+  });
+  html += '</div>';
+  modalTitle.innerText = "Esports";
+  document.getElementById("modalList").innerHTML = html;
+  modalText.style.display = "none";
+  modalDate.innerText = "Klicke auf einen Artikel";
+  modalScore.innerText = "";
+  modal.style.display = "flex";
+  
+  document.querySelectorAll(".modal-review-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const idx = item.dataset.index;
+      const es = esports[idx];
+      document.getElementById("modalList").innerHTML = "";
+      modalText.style.display = "block";
+      modalTitle.innerText = es.title;
+      modalText.innerText = es.full;
+      modalDate.innerText = "PIXELBYTE Esports";
+      modalScore.innerText = "★ Esports";
+    });
+  });
+});
+
+document.getElementById("navNews").addEventListener("click", (e) => {
+  e.preventDefault();
+  const target = document.getElementById("newsSection");
+  const offset = -150;
+  const top = target.getBoundingClientRect().top + window.pageYOffset + offset;
+  window.scrollTo({top: top, behavior: "smooth"});
+});
+
+const posts = [
+  { title: "Die 10 besten FPS-Mäuse 2026", preview: "Von Budget bis High-End — welche Maus für welches Spielgefühl.", full: "Die Wahl der richtigen Gaming-Maus kann den Unterschied zwischen Sieg und Niederlage ausmachen." },
+  { title: "GTA VI Release-Datum offiziell", preview: "Rockstar hat gesprochen. Alle Details, Infos und unsere Einschätzung.", full: "Grand Theft Auto VI ist endlich offiziell angekündigt und Rockstar Games hat das Releasedatum bestätigt: Herbst 2026." },
+  { title: "Gaming-PC für 800€ bauen", preview: "Kein Vorwissen nötig. Unser Guide führt dich durch den kompletten Build.", full: "Ein Gaming-PC muss kein Vermögen kosten. In diesem Guide zeigen wir dir, wie du für 800 Euro einen soliden Gaming-Rechner zusammenbaust." },
+  { title: "Avowed — Obsidian kehrt zurück", preview: "Endlich wieder ein RPG, das traut, komplex zu sein. Unser Urteil.", full: "Avowed ist das neue Fantasy-RPG von Obsidian Entertainment und markiert die Rückkehr des Studios zu seinen Wurzeln." },
+  { title: "Valorant Act V — Frischer Wind", preview: "Der Taktik-Shooter von Riot Games bringt neue Agenten und Maps.", full: "Valorant ist der kostenlose First-Person-Taktik-Shooter von Riot Games, der 2020 veröffentlicht wurde." },
+  { title: "RTX 5090 Test: Nvidia übertreibt", preview: "Nvidias neuestes Flaggschiff im Test.", full: "Die RTX 5090 ist Nvidias neuestes Flaggschiff und soll die ultimative Gaming-Grafikkarte sein." },
+];
+
+document.getElementById("allPostsBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  let html = '<div class="modal-review-list" style="display:flex;">';
+  posts.forEach((p, i) => {
+    html += `<div class="modal-review-item" data-index="${i}">
+      <h4>${p.title}</h4>
+      <p>${p.preview}</p>
+    </div>`;
+  });
+  html += '</div>';
+  modalTitle.innerText = "Neueste Posts";
+  document.getElementById("modalList").innerHTML = html;
+  modalText.style.display = "none";
+  modalDate.innerText = "Klicke auf einen Artikel";
+  modalScore.innerText = "";
+  modal.style.display = "flex";
+  
+  document.querySelectorAll(".modal-review-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const idx = item.dataset.index;
+      const p = posts[idx];
+      document.getElementById("modalList").innerHTML = "";
+      modalText.style.display = "block";
+      modalTitle.innerText = p.title;
+      modalText.innerText = p.full;
+      modalDate.innerText = "PIXELBYTE";
+      modalScore.innerText = "★ Artikel";
+    });
+  });
+});
+
+// Mobile Menu
+document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+  document.getElementById("mobileMenuBtn").classList.toggle("active");
+  document.getElementById("mobileNav").classList.toggle("active");
+});
+
+// Mobile Nav Links
+["navReviews", "navGuides", "navHardware", "navNews", "navEsports"].forEach(id => {
+  const mobileId = id + "Mobile";
+  const desktopBtn = document.getElementById(id);
+  if (document.getElementById(mobileId)) {
+    document.getElementById(mobileId).addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("mobileMenuBtn").classList.remove("active");
+      document.getElementById("mobileNav").classList.remove("active");
+      if (desktopBtn) desktopBtn.click();
+    });
+  }
+});
+
+// Theme Toggle
+document.getElementById("themeToggle").addEventListener("click", () => {
+  document.body.classList.toggle("light-mode");
+  const toggle = document.getElementById("themeToggle");
+  toggle.textContent = document.body.classList.contains("light-mode") ? "☀️" : "🌙";
+});
+
+// Back to Top
+window.addEventListener("scroll", () => {
+  const btn = document.getElementById("backToTop");
+  if (window.scrollY > 300) {
+    btn.classList.add("visible");
+  } else {
+    btn.classList.remove("visible");
+  }
+});
+document.getElementById("backToTop").addEventListener("click", () => {
+  window.scrollTo({top: 0, behavior: "smooth"});
+});
+
+// ALIEN INVASION GAME
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+let gameRunning = false;
+let score = 0;
+let aliens = [];
+let bullets = [];
+let lastTime = 0;
+let spawnTimer = 0;
+let gameOver = false;
+
+function drawSpaceship(a) {
+  const t = a.type || 1;
+  ctx.save();
+  ctx.translate(a.x, a.y);
+  if (t === 1) {
+    ctx.fillStyle = "#7c3aed";
+    ctx.beginPath();
+    ctx.moveTo(0, -20);
+    ctx.lineTo(15, 15);
+    ctx.lineTo(0, 10);
+    ctx.lineTo(-15, 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#00e5a0";
+    ctx.beginPath();
+    ctx.arc(0, -5, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(0,229,160,0.3)";
+    ctx.beginPath();
+    ctx.ellipse(0, 20, 12, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (t === 2) {
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.moveTo(0, -25);
+    ctx.lineTo(12, 5);
+    ctx.lineTo(8, 5);
+    ctx.lineTo(8, 15);
+    ctx.lineTo(-8, 15);
+    ctx.lineTo(-8, 5);
+    ctx.lineTo(-12, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(-4, -8, 3, 0, Math.PI * 2);
+    ctx.arc(4, -8, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f59e0b";
+    ctx.beginPath();
+    ctx.arc(0, 18, 8, 0, Math.PI, false);
+    ctx.fill();
+    ctx.fillStyle = "rgba(245,158,11,0.5)";
+    ctx.beginPath();
+    ctx.moveTo(-10, 22);
+    ctx.lineTo(0, 35);
+    ctx.lineTo(10, 22);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.moveTo(0, -30);
+    ctx.quadraticCurveTo(20, -10, 18, 10);
+    ctx.lineTo(10, 20);
+    ctx.lineTo(-10, 20);
+    ctx.lineTo(-18, 10);
+    ctx.quadraticCurveTo(-20, -10, 0, -30);
+    ctx.fill();
+    ctx.fillStyle = "#1a1a28";
+    ctx.beginPath();
+    ctx.moveTo(0, -25);
+    ctx.lineTo(10, 0);
+    ctx.lineTo(5, 5);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(-5, 5);
+    ctx.lineTo(-10, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#00e5a0";
+    ctx.beginPath();
+    ctx.arc(-5, -12, 3, 0, Math.PI * 2);
+    ctx.arc(5, -12, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.moveTo(-15, 15);
+    ctx.lineTo(-20, 30);
+    ctx.lineTo(-10, 25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(15, 15);
+    ctx.lineTo(20, 30);
+    ctx.lineTo(10, 25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(239,68,68,0.4)";
+    ctx.beginPath();
+    ctx.moveTo(-12, 28);
+    ctx.lineTo(0, 45);
+    ctx.lineTo(12, 28);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawAlien(a) {
+  ctx.save();
+  ctx.translate(a.x, a.y);
+  drawSpaceship(a.type);
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 10px Arial";
+  ctx.textAlign = "center";
+  const healthBar = "♥".repeat(a.lives);
+  ctx.fillText(healthBar, 0, -40);
+  ctx.restore();
+}
+
+function drawBullet(b) {
+  ctx.fillStyle = "#00e5a0";
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = "#00e5a0";
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function updateAlienGame(dt) {
+  if (gameOver) return;
+  spawnTimer += dt;
+  if (spawnTimer > 1200) {
+    spawnTimer = 0;
+    const r = Math.random();
+    let type = 1;
+    if (r > 0.6) type = 2;
+    if (r > 0.85) type = 3;
+    let speed = 50;
+    if (type === 2) speed = 70;
+    if (type === 3) speed = 90;
+    aliens.push({ x: 30 + Math.random() * 400, y: -30, speed: speed + Math.random() * 20, type: type, lives: type });
+  }
+  
+  aliens.forEach(a => { a.y += a.speed * dt / 1000; });
+  bullets.forEach(b => { b.y -= 400 * dt / 1000; });
+  
+  bullets = bullets.filter(b => b.y > -10);
+  
+  aliens = aliens.filter(a => {
+    if (a.y > 320) {
+      score = Math.max(0, score - 50);
+      document.getElementById("gameScore").innerText = score;
+      return false;
+    }
+    return true;
+  });
+  
+  bullets.forEach((b, bi) => {
+    aliens.forEach((a, ai) => {
+      if (Math.abs(b.x - a.x) < 25 && Math.abs(b.y - a.y) < 30) {
+        bullets.splice(bi, 1);
+        a.lives--;
+        if (a.lives <= 0) {
+          const points = a.type === 1 ? 10 : (a.type === 2 ? 20 : 30);
+          score += points;
+          document.getElementById("gameScore").innerText = score;
+          if (score >= 1000) {
+            gameOver = true;
+            gameRunning = false;
+            document.getElementById("gameStartBtn").textContent = "GEWONNEN!";
+            return;
+          }
+          aliens.splice(ai, 1);
+        }
+      }
+    });
+  });
+}
+
+function drawAlienGame() {
+  ctx.fillStyle = "#0a0a0f";
+  ctx.fillRect(0, 0, 460, 300);
+  ctx.fillStyle = "rgba(124,58,237,0.1)";
+  for (let i = 0; i < 20; i++) {
+    ctx.beginPath();
+    ctx.arc((i * 73) % 460, (i * 47) % 300, 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  aliens.forEach(drawAlien);
+  bullets.forEach(drawBullet);
+}
+
+function gameLoop(time) {
+  if (!gameRunning) return;
+  const dt = time - lastTime;
+  lastTime = time;
+  updateAlienGame(dt);
+  drawAlienGame();
+  if (!gameOver) requestAnimationFrame(gameLoop);
+}
+
+document.getElementById("gameStartBtn").addEventListener("click", () => {
+  if (gameRunning) {
+    gameRunning = false;
+    document.getElementById("gameStartBtn").textContent = "START";
+  } else {
+    score = 0;
+    aliens = [];
+    bullets = [];
+    spawnTimer = 0;
+    gameOver = false;
+    document.getElementById("gameScore").innerText = "0";
+    gameRunning = true;
+    lastTime = performance.now();
+    document.getElementById("gameStartBtn").textContent = "STOPP";
+    requestAnimationFrame(gameLoop);
+  }
+});
+
+canvas.addEventListener("click", (e) => {
+  if (!gameRunning) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  bullets.push({ x: x, y: 290 });
+});
+
+// SNAKE GAME
+const snakeCanvas = document.getElementById("snakeCanvas");
+const snakeCtx = snakeCanvas.getContext("2d");
+let snakeRunning = false;
+let snakeScore = 0;
+let snake = [];
+let food = { x: 0, y: 0 };
+let snakeDir = { x: 1, y: 0 };
+let snakeLastDir = { x: 1, y: 0 };
+let snakeInterval = null;
+const gridSize = 20;
+
+function drawSnakeGame() {
+  snakeCtx.fillStyle = "#0a0f0a";
+  snakeCtx.fillRect(0, 0, 460, 300);
+  snake.forEach((seg, i) => {
+    snakeCtx.fillStyle = i === 0 ? "#00e5a0" : "#00b380";
+    snakeCtx.fillRect(seg.x * gridSize, seg.y * gridSize, gridSize - 2, gridSize - 2);
+  });
+  snakeCtx.fillStyle = "#f59e0b";
+  snakeCtx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+}
+
+function spawnFood() {
+  food = {
+    x: Math.floor(Math.random() * (460 / gridSize)),
+    y: Math.floor(Math.random() * (300 / gridSize))
+  };
+}
+
+function updateSnake() {
+  const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
+  if (head.x < 0 || head.x >= 460 / gridSize || head.y < 0 || head.y >= 300 / gridSize || snake.some(s => s.x === head.x && s.y === head.y)) {
+    snakeRunning = false;
+    clearInterval(snakeInterval);
+    document.getElementById("snakeStartBtn").textContent = "START";
+    return;
+  }
+  snake.unshift(head);
+  if (head.x === food.x && head.y === food.y) {
+    snakeScore += 10;
+    document.getElementById("snakeScore").innerText = snakeScore;
+    spawnFood();
+  } else {
+    snake.pop();
+  }
+  drawSnakeGame();
+}
+
+document.getElementById("snakeStartBtn").addEventListener("click", () => {
+  if (snakeRunning) {
+    snakeRunning = false;
+    clearInterval(snakeInterval);
+    document.getElementById("snakeStartBtn").textContent = "START";
+  } else {
+    snake = [{ x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }];
+    snakeDir = { x: 1, y: 0 };
+    snakeLastDir = { x: 1, y: 0 };
+    snakeScore = 0;
+    document.getElementById("snakeScore").innerText = "0";
+    spawnFood();
+    snakeRunning = true;
+    document.getElementById("snakeStartBtn").textContent = "STOPP";
+    snakeInterval = setInterval(updateSnake, 150);
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!snakeRunning) return;
+  if (e.key === "ArrowUp" && snakeLastDir.y !== 1) { snakeDir = { x: 0, y: -1 }; }
+  if (e.key === "ArrowDown" && snakeLastDir.y !== -1) { snakeDir = { x: 0, y: 1 }; }
+  if (e.key === "ArrowLeft" && snakeLastDir.x !== 1) { snakeDir = { x: -1, y: 0 }; }
+  if (e.key === "ArrowRight" && snakeLastDir.x !== -1) { snakeDir = { x: 1, y: 0 }; }
+  snakeLastDir = { ...snakeDir };
+});
+
+// CLICKER GAME
+let clickerRunning = false;
+let clickerScore = 0;
+let clickerTimeLeft = 10;
+let clickerInterval = null;
+
+document.getElementById("clickerStartBtn").addEventListener("click", () => {
+  if (clickerRunning) return;
+  clickerRunning = true;
+  clickerScore = 0;
+  clickerTimeLeft = 10;
+  document.getElementById("clickerScore").innerText = "0";
+  document.getElementById("clickerTime").innerText = "10";
+  document.getElementById("clickerStartBtn").textContent = "LÄUFT...";
+  clickerInterval = setInterval(() => {
+    clickerTimeLeft--;
+    document.getElementById("clickerTime").innerText = clickerTimeLeft;
+    if (clickerTimeLeft <= 0) {
+      clearInterval(clickerInterval);
+      clickerRunning = false;
+      document.getElementById("clickerStartBtn").textContent = "ERGEBNIS: " + clickerScore;
+      setTimeout(() => { document.getElementById("clickerStartBtn").textContent = "START"; }, 3000);
+    }
+  }, 1000);
+});
+
+document.getElementById("clickerTarget").addEventListener("click", () => {
+  if (!clickerRunning) return;
+  clickerScore++;
+  document.getElementById("clickerScore").innerText = clickerScore;
+  const target = document.getElementById("clickerTarget");
+  target.style.transform = "scale(0.9)";
+  setTimeout(() => target.style.transform = "scale(1)", 50);
+});
+
+// PC BUILDER
+const pcParts = {
+  cpu: [
+    { name: "Intel i5-13600K", price: 280, score: 85 },
+    { name: "AMD Ryzen 7 7800X3D", price: 450, score: 98 },
+    { name: "Intel i7-14700K", price: 380, score: 92 },
+    { name: "AMD Ryzen 9 7950X", price: 550, score: 96 }
+  ],
+  gpu: [
+    { name: "RTX 4060", price: 300, score: 75 },
+    { name: "RTX 4070 Super", price: 550, score: 88 },
+    { name: "RTX 4080 Super", price: 1000, score: 95 },
+    { name: "RX 7800 XT", price: 450, score: 82 }
+  ],
+  ram: [
+    { name: "16GB DDR5-5600", price: 80, score: 60 },
+    { name: "32GB DDR5-6000", price: 140, score: 80 },
+    { name: "64GB DDR5-6400", price: 280, score: 95 }
+  ],
+  ssd: [
+    { name: "1TB NVMe Gen4", price: 70, score: 65 },
+    { name: "2TB NVMe Gen4", price: 120, score: 75 },
+    { name: "2TB NVMe Gen5", price: 200, score: 90 }
+  ],
+  psu: [
+    { name: "650W 80+ Bronze", price: 60, score: 50 },
+    { name: "750W 80+ Gold", price: 100, score: 75 },
+    { name: "850W 80+ Platinum", price: 160, score: 90 }
+  ],
+  case: [
+    { name: "Budget Gehäuse", price: 50, score: 40 },
+    { name: "Mittelklasse", price: 90, score: 65 },
+    { name: "High-End Tower", price: 180, score: 85 }
+  ]
+};
+
+let selectedParts = {};
+let currentCategory = "";
+
+function selectPart(category) {
+  currentCategory = category;
+  const optionsDiv = document.getElementById("pcBuilderOptions");
+  optionsDiv.style.display = "block";
+  let html = '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Wähle ' + category.toUpperCase() + ':</div>';
+  pcParts[category].forEach((part, i) => {
+    html += '<div onclick="selectPCPart(\'' + category + '\',' + i + ')" style="padding:8px;margin-bottom:4px;background:var(--bg);border:1px solid var(--border);border-radius:2px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text);">' + part.name + '</span><span style="font-size:12px;color:var(--accent);">' + part.price + '€</span></div>';
+  });
+  optionsDiv.innerHTML = html;
+}
+
+function selectPCPart(category, index) {
+  const part = pcParts[category][index];
+  selectedParts[category] = part;
+  document.getElementById("part-" + category).querySelector(".pc-part-selected").style.display = "block";
+  document.getElementById("pcBuilderOptions").style.display = "none";
+  updatePCBudget();
+}
+
+function updatePCBudget() {
+  let total = 0;
+  Object.values(selectedParts).forEach(p => total += p.price);
+  document.getElementById("pcBudget").innerText = total;
+  return total;
+}
+
+document.getElementById("pcBuildBtn").addEventListener("click", () => {
+  if (Object.keys(selectedParts).length < 6) {
+    alert("Bitte wähle alle 6 Komponenten aus!");
+    return;
+  }
+  const total = updatePCBudget();
+  if (total > 2000) {
+    alert("Budget überschritten! (" + total + "€ > 2000€)");
+    return;
+  }
+  let score = 0;
+  Object.values(selectedParts).forEach(p => score += p.score);
+  score = Math.round(score / 6);
+  
+  let pcText = "";
+  Object.entries(selectedParts).forEach(([cat, part]) => {
+    pcText += cat.toUpperCase() + ": " + part.name + " (" + part.price + "€)\n";
+  });
+  pcText += "\nGesamt: " + total + "€ | Performance: " + score + "/100";
+  
+  document.getElementById("pcResult").style.display = "block";
+  document.getElementById("pcStats").innerText = pcText;
+});
+
+// RELEASE CALENDAR
+const releases = [
+  { game: "Monster Hunter Wilds", date: "2026-02-28", platform: "PS5, PC, Xbox", genre: "Action-RPG", icon: "🦖" },
+  { game: "GTA VI", date: "2026-09-15", platform: "PS5, Xbox", genre: "Open World", icon: "🚗" },
+  { game: "Assassin's Creed Red", date: "2026-04-14", platform: "PS5, PC, Xbox", genre: "Action-Adventure", icon: "⚔️" },
+  { game: "The Witcher 4", date: "2026-06-21", platform: "PC, PS5", genre: "RPG", icon: "🗡️" },
+  { game: "Counter-Strike 2 Major", date: "2026-03-15", platform: "PC", genre: "FPS", icon: "🔫" },
+  { game: "Diablo 4: Vessel of Hatred", date: "2026-01-28", platform: "PC, PS5, Xbox", genre: "ARPG", icon: "🔥" },
+  { game: "Elden Ring DLC", date: "2026-05-10", platform: "PC, PS5, Xbox", genre: "Soulslike", icon: "💍" },
+  { game: "FIFA 27", date: "2026-09-26", platform: "PC, PS5, Xbox", genre: "Sport", icon: "⚽" },
+  { game: "Minecraft 2", date: "2026-11-15", platform: "PC, Console", genre: "Sandbox", icon: "🧊" },
+  { game: "Fable", date: "2026-07-08", platform: "Xbox, PC", genre: "RPG", icon: "🐗" },
+  { game: "Avowed", date: "2026-02-20", platform: "PC, PS5", genre: "RPG", icon: "🧙" },
+  { game: "League of Legends Animated", date: "2026-08-01", platform: "Netflix", genre: "Animation", icon: "🎬" }
+];
+
+function getDaysUntil(dateStr) {
+  const release = new Date(dateStr);
+  const today = new Date();
+  const diff = release - today;
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function renderReleases() {
+  const list = document.getElementById("releaseList");
+  const grid = document.getElementById("releaseCalendarGrid");
+  releases.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  let html = "";
+  let gridHtml = "";
+  releases.forEach(r => {
+    const days = getDaysUntil(r.date);
+    let daysText = days > 0 ? "in " + days + " Tagen" : "Verfügbar";
+    if (days === 0) daysText = "Heute!";
+    if (days < 0) daysText = "Veröffentlicht";
+    
+    let borderColor = days > 90 ? "var(--border)" : (days > 30 ? "var(--accent3)" : "var(--accent)");
+    
+    // Modal List
+    html += '<div style="background:var(--surface);border:1px solid ' + borderColor + ';padding:12px;border-radius:4px;display:flex;align-items:center;gap:12px;"><span style="font-size:28px;">' + r.icon + '</span><div style="flex:1;"><div style="font-family:var(--font-display);font-size:14px;color:var(--text);margin-bottom:4px;">' + r.game + '</div><div style="font-size:11px;color:var(--muted);">' + r.genre + ' • ' + r.platform + '</div></div><div style="text-align:right;"><div style="font-size:12px;color:var(--accent);font-weight:700;">' + formatDate(r.date) + '</div><div style="font-size:10px;color:var(--muted);">' + daysText + '</div></div></div>';
+    
+    // Grid on page
+    gridHtml += '<div style="background:var(--surface);border:1px solid ' + borderColor + ';padding:12px;border-radius:4px;text-align:center;"><div style="font-size:32px;margin-bottom:8px;">' + r.icon + '</div><div style="font-family:var(--font-display);font-size:13px;color:var(--text);margin-bottom:4px;">' + r.game + '</div><div style="font-size:11px;color:var(--accent);font-weight:700;">' + formatDate(r.date) + '</div><div style="font-size:10px;color:var(--muted);">' + daysText + '</div></div>';
+  });
+  list.innerHTML = html;
+  grid.innerHTML = gridHtml;
+}
+
+// Render on page load
+renderReleases();
+
+document.getElementById("releaseCalendarModal").addEventListener("click", () => {
+  renderReleases();
+});
+
+// Scroll Animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll(".section, .post-card, .featured-main, .featured-side").forEach(el => {
+  el.classList.add("fade-in");
+  observer.observe(el);
+});
+
+// Newsletter Validation
+document.querySelector(".nl-btn").addEventListener("click", (e) => {
+  e.preventDefault();
+  const email = document.querySelector(".nl-input").value;
+  const errorDiv = document.querySelector(".nl-error") || document.createElement("div");
+  errorDiv.className = "nl-error";
+  errorDiv.textContent = "";
+  
+  if (!email) {
+    errorDiv.textContent = "Bitte Email eingeben";
+    document.querySelector(".newsletter-box-content").appendChild(errorDiv);
+    errorDiv.style.display = "block";
+    return;
+  }
+  
+  if (!email.includes("@") || !email.includes(".")) {
+    errorDiv.textContent = "Bitte gültige Email eingeben";
+    document.querySelector(".newsletter-box-content").appendChild(errorDiv);
+    errorDiv.style.display = "block";
+    return;
+  }
+  
+  // Success
+  errorDiv.style.display = "none";
+  document.querySelector(".nl-input").value = "";
+  document.querySelector(".nl-btn").textContent = "Angemeldet! ✓";
+  setTimeout(() => {
+    document.querySelector(".nl-btn").textContent = "Jetzt anmelden";
+  }, 3000);
+});
+</script>
+
+<script>
+// Global Custom Cursor
+const globalCursor = document.getElementById("globalCursor");
+document.addEventListener("mousemove", (e) => {
+  globalCursor.style.left = e.clientX + "px";
+  globalCursor.style.top = e.clientY + "px";
+});
+</script>
+
+</body>
+</html>
